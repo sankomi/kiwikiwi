@@ -1,10 +1,9 @@
-from flask import Flask, render_template
+from flask import Flask
 
 def create_app(test_config=None):
     app = Flask(__name__)
 
-    @app.route("/")
-    def kiwi():
-        return render_template("index.html")
+    from .views import main
+    app.register_blueprint(main.bp)
 
     return app
