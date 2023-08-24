@@ -1,0 +1,6 @@
+{% extends "base.html" %}
+
+{% block content %}
+	<h1>{% block title %}{{ title }}{% endblock %}</h1>
+	<p>page does not exist! <a href="/edit/{{ title }}">create</a></p>
+{% endblock %}
