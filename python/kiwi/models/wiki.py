@@ -8,7 +8,9 @@ class Page(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(50), unique=True, nullable=False)
     content = db.Column(db.Text)
-    refreshed = db.Column(db.DateTime, default=datetime.now())
+    lock = db.Column(db.DateTime)
+    lock_id = db.Column(db.Integer)
+    refresh = db.Column(db.DateTime, default=datetime.now())
 
     def __repr__(self):
         return f"<Page(id={self.id}, title={self.title}>"

@@ -10,7 +10,7 @@ def create_app(test_config=None):
     app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
     db.init_app(app)
 
-    from .models import page
+    from .models import wiki
 
     from .views import main, wiki
     app.register_blueprint(main.bp)
