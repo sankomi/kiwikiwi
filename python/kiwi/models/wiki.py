@@ -24,7 +24,7 @@ class History(db.Model):
     summary = db.Column(db.String(100))
     title = db.Column(db.Text)
     content = db.Column(db.Text)
-    added = db.Column(db.DateTime, default=datetime.now())
+    write = db.Column(db.DateTime, default=datetime.now())
 
     def __repr__(self):
         return f"<History(id={self.id}, page_id={self.page_id}>"

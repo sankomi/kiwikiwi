@@ -2,9 +2,10 @@ from datetime import datetime, timedelta
 from random import randint
 
 from flask import Blueprint, render_template, request, redirect, url_for
+from diff_match_patch import diff_match_patch
 
 from kiwi import db
-from kiwi.models.wiki import Page
+from kiwi.models.wiki import Page, History
 
 bp = Blueprint("wiki", __name__)
 
@@ -35,6 +36,13 @@ def edit(title):
         if page is None:
             page = Page(title=title, content=content)
             db.session.add(page)
+
+            title_patch = get_patch("", title)
+            content_patch = get_patch("", content)
+
+            history = History(page=page, summary="update", title=title_patch, content=content_patch)
+            db.session.add(history)
+
             db.session.commit()
 
             return redirect(url_for("wiki.view", title=page.title))
@@ -56,6 +64,11 @@ def edit(title):
             page.content = content
             return render_template("edit.html", page=page)
 
+        title_patch = get_patch(locked.title, title)
+        content_patch = get_patch(locked.content, content)
+        history = History(page=locked, summary="update", title=title_patch, content=content_patch)
+        db.session.add(history)
+
         locked.title = title
         locked.content = content
         locked.lock = None
@@ -64,3 +77,12 @@ def edit(title):
         db.session.commit()
 
         return redirect(url_for("wiki.view", title=locked.title))
+
+
+def get_patch(text1, text2):
+    dmp = diff_match_patch()
+    line_text1, line_text2, line_array = dmp.diff_linesToChars(text1, text2)
+    diff = dmp.diff_main(line_text1, line_text2, False)
+    dmp.diff_charsToLines(diff, line_array)
+    patch = dmp.patch_make(diff)
+    return dmp.patch_toText(patch)
