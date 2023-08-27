@@ -3,6 +3,7 @@ from random import randint
 
 from flask import Blueprint, render_template, request, redirect, url_for
 from diff_match_patch import diff_match_patch
+from sqlalchemy.exc import OperationalError
 
 from kiwi import db
 from kiwi.models.wiki import Page, History
@@ -54,8 +55,12 @@ def edit(title):
 
         lock_id = randint(0, 2147483647)
         lock = datetime.now() + timedelta(seconds=60)
-        Page.query.filter_by(id=page.id, lock_id=None).update(dict(lock=lock, lock_id=lock_id))
-        db.session.commit()
+
+        try:
+            Page.query.filter_by(id=page.id, lock_id=None).update(dict(lock=lock, lock_id=lock_id))
+            db.session.commit()
+        except OperationalError as e:
+            db.session.rollback()
 
         locked = Page.query.filter_by(title=title, lock=lock, lock_id=lock_id).first()
 
