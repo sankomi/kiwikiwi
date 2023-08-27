@@ -21,6 +21,18 @@ def view(title):
         return render_template("view.html", page=page)
 
 
+@bp.route("/wiki")
+def random():
+    count = Page.query.count()
+
+    if count > 0:
+        index = randint(0, count - 1)
+        page = Page.query.offset(index).first()
+        return redirect(url_for("wiki.view", title=page.title))
+    else:
+        return redirect(url_for("wiki.view", title="kiwikiwi"))
+
+
 @bp.route("/edit/<title>", methods=("GET", "POST"))
 def edit(title):
     page = Page.query.filter_by(title=title).first()
