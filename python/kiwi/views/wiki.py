@@ -96,6 +96,16 @@ def edit(title):
         return redirect(url_for("wiki.view", title=locked.title))
 
 
+@bp.route("/history/<title>")
+def history(title):
+    page = Page.query.filter_by(title=title).first()
+
+    if page is None:
+        return redirect(url_for("wiki.view", title=title))
+    else:
+        return render_template("history.html", page=page)
+
+
 def get_patch(text1, text2):
     dmp = diff_match_patch()
     line_text1, line_text2, line_array = dmp.diff_linesToChars(text1, text2)

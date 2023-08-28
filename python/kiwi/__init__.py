@@ -5,6 +5,7 @@ db = SQLAlchemy()
 
 def create_app(test_config=None):
     app = Flask(__name__)
+    app.url_map.strict_slashes = False
 
     app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///kiwi.db"
     app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False

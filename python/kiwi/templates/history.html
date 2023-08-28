@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+
+{% block content %}
+	<h1>{% block title %}{{ page.title }}{% endblock %}</h1>
+	<ul>
+		{% for history in page.historys %}
+		<li>
+			<p>{{ history.summary }} - {{ history.write }}</p>
+			{% if history.title is not none and history.title != "" %}
+			<pre>{{ history.title }}</pre>
+			{% endif %}
+			<pre>{{ history.content }}</pre>
+		</li>
+		{% endfor %}
+	</ul>
+{% endblock %}

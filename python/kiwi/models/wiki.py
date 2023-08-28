@@ -20,7 +20,7 @@ class History(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     page_id = db.Column(db.Integer, db.ForeignKey("pages.id", ondelete="CASCADE"), nullable=False)
-    page = db.relationship("Page", backref=db.backref("historys", cascade="all, delete-orphan"))
+    page = db.relationship("Page", backref=db.backref("historys", order_by="History.id.desc()", cascade="all, delete-orphan"))
     summary = db.Column(db.String(100))
     title = db.Column(db.Text)
     content = db.Column(db.Text)
