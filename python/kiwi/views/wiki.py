@@ -108,8 +108,7 @@ def history(title):
 
 def get_patch(text1, text2):
     dmp = diff_match_patch()
-    line_text1, line_text2, line_array = dmp.diff_linesToChars(text1, text2)
-    diff = dmp.diff_main(line_text1, line_text2, False)
-    dmp.diff_charsToLines(diff, line_array)
+    diff = dmp.diff_main(text1, text2, False)
+    dmp.diff_cleanupSemantic(diff)
     patch = dmp.patch_make(diff)
     return dmp.patch_toText(patch)
