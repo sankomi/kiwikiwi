@@ -17,8 +17,10 @@ class Page(db.Model):
 
 class History(db.Model):
     __tablename__ = "historys"
+    __tableargs__ = db.UniqueConstraint("page_id", "event", name="unique_history_event")
 
     id = db.Column(db.Integer, primary_key=True)
+    event = db.Column(db.Integer, default=1)
     page_id = db.Column(db.Integer, db.ForeignKey("pages.id", ondelete="CASCADE"), nullable=False)
     page = db.relationship("Page", backref=db.backref("historys", order_by="History.id.desc()", cascade="all, delete-orphan"))
     summary = db.Column(db.String(100))

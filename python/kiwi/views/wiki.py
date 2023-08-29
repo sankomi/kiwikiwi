@@ -33,6 +33,28 @@ def random():
         return redirect(url_for("wiki.view", title="kiwikiwi"))
 
 
+@bp.route("/wiki/<title>/<int:event>")
+def back(title, event):
+    page = Page.query.filter_by(title=title).first()
+    history = History.query.filter_by(event=event, page_id=page.id).first()
+
+    if history is None:
+        return redirect(url_for("wiki.history", title=title))
+
+    back_title = ""
+    back_content = ""
+
+    for history in reversed(page.historys):
+        if history.event > event:
+            break
+        back_title = apply_patch(back_title, history.title)
+        back_content = apply_patch(back_content, history.content)
+
+    back = Page(title=back_title, content=back_content)
+
+    return render_template("back.html", page=back, event=event)
+
+
 @bp.route("/edit/<title>", methods=("GET", "POST"))
 def edit(title):
     page = Page.query.filter_by(title=title).first()
@@ -83,7 +105,8 @@ def edit(title):
 
         title_patch = get_patch(locked.title, title)
         content_patch = get_patch(locked.content, content)
-        history = History(page=locked, summary="update", title=title_patch, content=content_patch)
+        event = locked.historys[0].event + 1
+        history = History(page=locked, summary="update", title=title_patch, content=content_patch, event=event)
         db.session.add(history)
 
         locked.title = title
@@ -112,3 +135,10 @@ def get_patch(text1, text2):
     dmp.diff_cleanupSemantic(diff)
     patch = dmp.patch_make(diff)
     return dmp.patch_toText(patch)
+
+
+def apply_patch(text, patch_text):
+    dmp = diff_match_patch()
+    patch = dmp.patch_fromText(patch_text)
+    new_text, _ = dmp.patch_apply(patch, text)
+    return new_text

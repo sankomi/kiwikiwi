@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+
+{% block content %}
+	<h1>{% block title %}{{ page.title }}{% endblock %} ({{ event }})</h1>
+	<div>
+		<a href="/wiki/{{ page.title }}">latest</a>
+		<a href="/history/{{ page.title }}">history</a>
+	</div>
+	<pre>{{ page.content }}</pre>
+{% endblock %}
