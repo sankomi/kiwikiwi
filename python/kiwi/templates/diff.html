@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+
+{% block content %}
+	<h1>diff(<a href="/wiki/{{ page.title }}">{% block title %}{{ page.title }}{% endblock %}</a>, {{ history.event }});</h1>
+	<div>
+		<a href="/wiki/{{ page.title }}/{{ history.event }}">view</a>
+		<a href="/history/{{ page.title }}">history</a>
+	</div>
+	<h2>title</h2>
+	{% if history.title is not none and history.title != "" %}
+	<pre>{{ history.title }}</pre>
+	{% else  %}
+	<p>no change</p>
+	{% endif %}
+
+	<h2>content</h2>
+	{% if history.content is not none and history.content != "" %}
+	<pre>{{ history.content }}</pre>
+	{% else  %}
+	<p>no change</p>
+	{% endif %}
+{% endblock %}

@@ -1,19 +1,18 @@
 {% extends "base.html" %}
 
 {% block content %}
-	<h1>{% block title %}{{ page.title }}{% endblock %}</h1>
+	<h1>history(<a href="/wiki/{{ page.title }}">{% block title %}{{ page.title }}{% endblock %}</a>);</h1>
 	<div>
-		<a href="/wiki/{{ page.title }}">latest</a>
+		<a href="/edit/{{ page.title }}">edit</a>
 	</div>
 	<ul>
 		{% for history in page.historys %}
 		<li>
 			<p>{{ history.summary }} - {{ history.write }}</p>
-			<div><a href="/wiki/{{ page.title }}/{{ history.event }}">view</a></div>
-			{% if history.title is not none and history.title != "" %}
-			<pre>{{ history.title }}</pre>
-			{% endif %}
-			<pre>{{ history.content }}</pre>
+			<div>
+				<a href="/wiki/{{ page.title }}/{{ history.event }}">view</a>
+				<a href="/diff/{{ page.title }}/{{ history.event }}">diff</a>
+			</div>
 		</li>
 		{% endfor %}
 	</ul>

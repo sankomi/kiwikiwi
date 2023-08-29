@@ -38,7 +38,7 @@ def back(title, event):
     page = Page.query.filter_by(title=title).first()
     history = History.query.filter_by(event=event, page_id=page.id).first()
 
-    if history is None:
+    if page is None or  history is None:
         return redirect(url_for("wiki.history", title=title))
 
     back_title = ""
@@ -127,6 +127,17 @@ def history(title):
         return redirect(url_for("wiki.view", title=title))
     else:
         return render_template("history.html", page=page)
+
+
+@bp.route("/diff/<title>/<int:event>")
+def diff(title, event):
+    page = Page.query.filter_by(title=title).first()
+    history = History.query.filter_by(event=event, page_id=page.id).first()
+
+    if page is None or history is None:
+        return redirect(url_for("wiki.history", title=title))
+
+    return render_template("diff.html", page=page, history=history)
 
 
 def get_patch(text1, text2):
