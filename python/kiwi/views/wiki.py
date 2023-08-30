@@ -7,6 +7,7 @@ from sqlalchemy.exc import OperationalError
 
 from kiwi import db
 from kiwi.models.wiki import Page, History
+from kiwi.error import TitleDuplicateException, PageLockException
 
 bp = Blueprint("wiki", __name__)
 
@@ -35,24 +36,12 @@ def random():
 
 @bp.route("/wiki/<title>/<int:event>")
 def back(title, event):
-    page = Page.query.filter_by(title=title).first()
-    history = History.query.filter_by(event=event, page_id=page.id).first()
+    back = make(title, event)
 
-    if page is None or  history is None:
+    if back is None:
         return redirect(url_for("wiki.history", title=title))
 
-    back_title = ""
-    back_content = ""
-
-    for history in reversed(page.historys):
-        if history.event > event:
-            break
-        back_title = apply_patch(back_title, history.title)
-        back_content = apply_patch(back_content, history.content)
-
-    back = Page(title=back_title, content=back_content)
-
-    return render_template("back.html", page=back, event=event)
+    return render_template("back.html", title=title, page=back, event=event)
 
 
 @bp.route("/edit/<title>", methods=("GET", "POST"))
@@ -65,58 +54,17 @@ def edit(title):
 
         return render_template("edit.html", page=page)
     elif request.method == "POST":
-        title = request.form["title"]
+        new_title = request.form["title"]
         content = request.form["content"]
 
-        if page is None:
-            page = Page(title=title, content=content)
-            db.session.add(page)
-
-            title_patch = get_patch("", title)
-            content_patch = get_patch("", content)
-
-            history = History(page=page, summary="update", title=title_patch, content=content_patch)
-            db.session.add(history)
-
-            db.session.commit()
-
-            return redirect(url_for("wiki.view", title=page.title))
-
-        if page.lock is not None and page.lock <= datetime.now():
-            page.lock_id = None
-            page.lock = None
-            db.session.commit()
-
-        lock_id = randint(0, 2147483647)
-        lock = datetime.now() + timedelta(seconds=60)
-
         try:
-            Page.query.filter_by(id=page.id, lock_id=None).update(dict(lock=lock, lock_id=lock_id))
-            db.session.commit()
-        except OperationalError as e:
-            db.session.rollback()
-
-        locked = Page.query.filter_by(title=title, lock=lock, lock_id=lock_id).first()
-
-        if locked is None:
+            updated = update(title, new_title, content)
+        except (TitleDuplicateException, PageLockException) as e:
             page.title = title
             page.content = content
             return render_template("edit.html", page=page)
 
-        title_patch = get_patch(locked.title, title)
-        content_patch = get_patch(locked.content, content)
-        event = locked.historys[0].event + 1
-        history = History(page=locked, summary="update", title=title_patch, content=content_patch, event=event)
-        db.session.add(history)
-
-        locked.title = title
-        locked.content = content
-        locked.lock = None
-        locked.lock_id = None
-        locked.refresh = datetime.now()
-        db.session.commit()
-
-        return redirect(url_for("wiki.view", title=locked.title))
+        return redirect(url_for("wiki.view", title=updated.title))
 
 
 @bp.route("/history/<title>")
@@ -137,7 +85,99 @@ def diff(title, event):
     if page is None or history is None:
         return redirect(url_for("wiki.history", title=title))
 
-    return render_template("diff.html", page=page, history=history)
+    return render_template("diff.html", title=title, page=page, history=history)
+
+
+@bp.route("/rehash/<title>/<int:event>")
+def rehash(title, event):
+    back = make(title, event)
+
+    if back is None:
+        return redirect(url_for("wiki.view", title=title))
+
+    try:
+        updated = update(title, back.title, back.content)
+    except (TitleDuplicateException, PageLockException) as e:
+        return redirect(url_for("wiki.back", title=title, event=event))
+
+    return redirect(url_for("wiki.view", title=updated.title))
+
+
+def make(title, event):
+    page = Page.query.filter_by(title=title).first()
+    history = History.query.filter_by(event=event, page_id=page.id).first()
+
+    if page is None or history is None:
+        return None
+
+    back_title = ""
+    back_content = ""
+
+    for history in reversed(page.historys):
+        if history.event > event:
+            break
+        back_title = apply_patch(back_title, history.title)
+        back_content = apply_patch(back_content, history.content)
+
+    return Page(title=back_title, content=back_content)
+
+
+def update(title, new_title, content):
+    page = Page.query.filter_by(title=title).first()
+
+    if title != new_title:
+        new_page = Page.query.filter_by(title=new_title).first()
+
+        if new_page is not None:
+            raise TitleDuplicateException("page with new title already exists")
+
+    if page is None:
+        page = Page(title=new_title, content=content)
+        db.session.add(page)
+
+        title_patch = get_patch("", new_title)
+        content_patch = get_patch("", content)
+
+        history = History(page=page, summary="update", title=title_patch, content=content_patch)
+        db.session.add(history)
+
+        db.session.commit()
+
+        return page
+
+    if page.lock is not None and page.lock <= datetime.now():
+        page.lock_id = None
+        page.lock = None
+        db.session.commit()
+
+    lock_id = randint(0, 2147483647)
+    lock = datetime.now() + timedelta(seconds=60)
+
+    try:
+        Page.query.filter_by(id=page.id, lock_id=None).update(dict(lock=lock, lock_id=lock_id))
+        db.session.commit()
+    except OperationalError as e:
+        db.session.rollback()
+
+    locked = Page.query.filter_by(title=title, lock=lock, lock_id=lock_id).first()
+
+    if locked is None:
+        raise PageLockException("page is locked")
+
+    title_patch = get_patch(locked.title, new_title)
+    content_patch = get_patch(locked.content, content)
+    event = locked.historys[0].event + 1
+    history = History(page=locked, summary="update", title=title_patch, content=content_patch, event=event, write=datetime.now())
+    db.session.add(history)
+
+    locked.title = new_title
+    locked.content = content
+    locked.lock = None
+    locked.lock_id = None
+    locked.refresh = datetime.now()
+    db.session.commit()
+
+    return locked
 
 
 def get_patch(text1, text2):
