@@ -11,6 +11,10 @@
 			<input id="title" name="title" value="{{ page.title }}">
 		</div>
 		<div>
+			<label for="summary">summary</label>
+			<input id="summary" name="summary" value="{% if summary is not none %}{{ summary }}{% endif %}">
+		</div>
+		<div>
 			<label for="content">content</label>
 			<textarea id="content" name="content">{{ page.content }}</textarea>
 		</div>

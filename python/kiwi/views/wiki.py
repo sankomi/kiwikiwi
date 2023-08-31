@@ -45,24 +45,25 @@ def back(title, event):
 
 
 @bp.route("/edit/<title>", methods=("GET", "POST"))
-def edit(title):
+def edit(title, summary=None):
     page = Page.query.filter_by(title=title).first()
 
     if request.method == "GET":
         if page is None:
             page = Page(title=title, content="")
 
-        return render_template("edit.html", page=page)
+        return render_template("edit.html", page=page, summary=summary)
     elif request.method == "POST":
         new_title = request.form["title"]
         content = request.form["content"]
+        summary = request.form["summary"] or "edit"
 
         try:
-            updated = update(title, new_title, content)
+            updated = update(title, new_title, content, summary)
         except (TitleDuplicateException, PageLockException) as e:
             page.title = title
             page.content = content
-            return render_template("edit.html", page=page)
+            return render_template("edit.html", page=page, summary=summary)
 
         return redirect(url_for("wiki.view", title=updated.title))
 
@@ -96,7 +97,7 @@ def rehash(title, event):
         return redirect(url_for("wiki.view", title=title))
 
     try:
-        updated = update(title, back.title, back.content)
+        updated = update(title, back.title, back.content, "rehash(" + str(event) + ")")
     except (TitleDuplicateException, PageLockException) as e:
         return redirect(url_for("wiki.back", title=title, event=event))
 
@@ -122,7 +123,7 @@ def make(title, event):
     return Page(title=back_title, content=back_content)
 
 
-def update(title, new_title, content):
+def update(title, new_title, content, summary):
     page = Page.query.filter_by(title=title).first()
 
     if title != new_title:
@@ -138,7 +139,7 @@ def update(title, new_title, content):
         title_patch = get_patch("", new_title)
         content_patch = get_patch("", content)
 
-        history = History(page=page, summary="update", title=title_patch, content=content_patch)
+        history = History(page=page, summary=summary, title=title_patch, content=content_patch)
         db.session.add(history)
 
         db.session.commit()
@@ -167,7 +168,7 @@ def update(title, new_title, content):
     title_patch = get_patch(locked.title, new_title)
     content_patch = get_patch(locked.content, content)
     event = locked.historys[0].event + 1
-    history = History(page=locked, summary="update", title=title_patch, content=content_patch, event=event, write=datetime.now())
+    history = History(page=locked, summary=summary, title=title_patch, content=content_patch, event=event, write=datetime.now())
     db.session.add(history)
 
     locked.title = new_title
