@@ -1,5 +1,6 @@
 from datetime import datetime, timedelta
 from random import randint
+import math
 
 from flask import Blueprint, render_template, request, redirect, url_for
 from diff_match_patch import diff_match_patch
@@ -34,7 +35,7 @@ def random():
         return redirect(url_for("wiki.view", title="kiwikiwi"))
 
 
-@bp.route("/wiki/<title>/<int:event>")
+@bp.route("/back/<title>/<int:event>")
 def back(title, event):
     back = make(title, event)
 
@@ -75,7 +76,21 @@ def history(title):
     if page is None:
         return redirect(url_for("wiki.view", title=title))
     else:
-        return render_template("history.html", page=page)
+        num_pages = math.ceil(len(page.historys) / 10)
+        historys = page.historys[0:10]
+        return render_template("history.html", page=page, pages=(1, num_pages), historys=historys)
+
+
+@bp.route("/history/<title>/<int:page>")
+def history_page(title, page):
+    the_page = Page.query.filter_by(title=title).first()
+
+    if the_page is None:
+        return redirect(url_for("wiki.view", title=title))
+    else:
+        num_pages = math.ceil(len(the_page.historys) / 10)
+        historys = the_page.historys[(page - 1) * 10:page * 10]
+        return render_template("history.html", page=the_page, pages=(page, num_pages), historys=historys)
 
 
 @bp.route("/diff/<title>/<int:event>")

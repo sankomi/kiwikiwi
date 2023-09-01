@@ -1,20 +1,27 @@
 {% extends "base.html" %}
 
 {% block content %}
-	<h1>history(<a href="/wiki/{{ page.title }}">{% block title %}{{ page.title }}{% endblock %}</a>);</h1>
+<h1>history(<a href="/wiki/{{ page.title }}">{% block title %}{{ page.title }}{% endblock %}</a>, {{ pages[0] }});</h1>
 	<div>
 		<a href="/edit/{{ page.title }}">edit</a>
 	</div>
 	<ul>
-		{% for history in page.historys %}
+		{% for history in historys %}
 		<li>
 			<p>{{ history.summary }} - {{ history.write }}</p>
 			<div>
-				<a href="/wiki/{{ page.title }}/{{ history.event }}">view</a>
+				<a href="/back/{{ page.title }}/{{ history.event }}">view</a>
 				<a href="/diff/{{ page.title }}/{{ history.event }}">diff</a>
 				<a href="/rehash/{{ page.title }}/{{ history.event }}">rehash</a>
 			</div>
 		</li>
 		{% endfor %}
 	</ul>
+	<div>
+		{% if pages[0] > 1 and pages[0] <= pages[1] %}
+		<a href="/history/{{ page.title }}/{{ pages[0] - 1 }}">prev</a>
+		{% endif %}
+		{% if pages[0] >= 0 and pages[0] < pages[1] %}
+		<a href="/history/{{ page.title }}/{{ pages[0] + 1 }}">next</a>
+		{% endif %}
 {% endblock %}
