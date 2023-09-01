@@ -1,9 +1,11 @@
 {% extends "base.html" %}
 
+{% block title %}edit({{ page.title }});{% endblock %}
+
 {% block content %}
-	<h1>edit(<a href="/wiki/{{ page.title }}">{% block title %}{{ page.title }}{% endblock %}</a>);</h1>
+	<h1>edit(<a href="/wiki/{{ page.title|urlencode }}">{{ page.title }}</a>);</h1>
 	<div>
-		<a href="/history/{{ page.title }}">history</a>
+		<a href="/history/{{ page.title|urlencode }}">history</a>
 	</div>
 	<form method="post">
 		<div>

@@ -57,7 +57,11 @@ def edit(title, summary=None):
     elif request.method == "POST":
         new_title = request.form["title"]
         content = request.form["content"]
-        summary = request.form["summary"] or "edit"
+        summary = request.form["summary"]
+
+        if "/" in new_title:
+            page = Page(title=new_title, content=content)
+            return render_template("edit.html", page=page, summary=summary)
 
         try:
             updated = update(title, new_title, content, summary)
@@ -154,7 +158,7 @@ def update(title, new_title, content, summary):
         title_patch = get_patch("", new_title)
         content_patch = get_patch("", content)
 
-        history = History(page=page, summary=summary, title=title_patch, content=content_patch)
+        history = History(page=page, summary=summary or "create", title=title_patch, content=content_patch)
         db.session.add(history)
 
         db.session.commit()
@@ -183,7 +187,7 @@ def update(title, new_title, content, summary):
     title_patch = get_patch(locked.title, new_title)
     content_patch = get_patch(locked.content, content)
     event = locked.historys[0].event + 1
-    history = History(page=locked, summary=summary, title=title_patch, content=content_patch, event=event, write=datetime.now())
+    history = History(page=locked, summary=summary or "edit", title=title_patch, content=content_patch, event=event, write=datetime.now())
     db.session.add(history)
 
     locked.title = new_title

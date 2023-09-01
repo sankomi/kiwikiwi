@@ -11,6 +11,12 @@ body {
 	margin: 1rem auto;
 }
 
+a {
+	color: mediumpurple;
+}
+del {
+	color: grey;
+}
 label {
 	display: block;
 	margin: 0.5rem 0;
