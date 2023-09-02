@@ -5,6 +5,8 @@ import math
 from flask import Blueprint, render_template, request, redirect, url_for
 from diff_match_patch import diff_match_patch
 from sqlalchemy.exc import OperationalError
+from markdown import markdown
+import bleach
 
 from kiwi import db
 from kiwi.models.wiki import Page, History
@@ -139,7 +141,9 @@ def make(title, event):
         back_title = apply_patch(back_title, history.title)
         back_content = apply_patch(back_content, history.content)
 
-    return Page(title=back_title, content=back_content)
+    back_html = markdown(bleach.clean(back_content))
+
+    return Page(title=back_title, content=back_content, html=back_html)
 
 
 def update(title, new_title, content, summary):
@@ -152,7 +156,8 @@ def update(title, new_title, content, summary):
             raise TitleDuplicateException("page with new title already exists")
 
     if page is None:
-        page = Page(title=new_title, content=content)
+        html = markdown(bleach.clean(content))
+        page = Page(title=new_title, content=content, html=html)
         db.session.add(page)
 
         title_patch = get_patch("", new_title)
@@ -190,8 +195,10 @@ def update(title, new_title, content, summary):
     history = History(page=locked, summary=summary or "edit", title=title_patch, content=content_patch, event=event, write=datetime.now())
     db.session.add(history)
 
+    html = markdown(bleach.clean(content))
     locked.title = new_title
     locked.content = content
+    locked.html = html
     locked.lock = None
     locked.lock_id = None
     locked.refresh = datetime.now()

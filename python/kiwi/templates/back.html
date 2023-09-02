@@ -8,5 +8,5 @@
 		<a href="/rehash/{{ title|urlencode }}/{{ event|urlencode }}">rehash</a>
 		<a href="/history/{{ title|urlencode }}">history</a>
 	</div>
-	<pre>{{ page.content }}</pre>
+	<div>{{ page.html|safe }}</div>
 {% endblock %}

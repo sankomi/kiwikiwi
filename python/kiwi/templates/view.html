@@ -6,5 +6,5 @@
 		<a href="/edit/{{ page.title|urlencode }}">edit</a>
 		<a href="/history/{{ page.title|urlencode }}">history</a>
 	</div>
-	<pre>{{ page.content }}</pre>
+	<div>{{ page.html|safe }}</div>
 {% endblock %}
