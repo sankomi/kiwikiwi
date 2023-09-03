@@ -10,16 +10,16 @@
 		<a href="/history/{{ title|urlencode }}">history</a>
 	</div>
 	<h2>title</h2>
-	{% if history.title is not none and history.title != "" %}
-	<pre>{{ history.title }}</pre>
+	{% if diffs[0] is not none and diffs[0] != "" %}
+	<pre class="diff">{{ diffs[0]|safe }}</pre>
 	{% else  %}
-	<p>no change</p>
+	<pre>no change</pre>
 	{% endif %}
 
 	<h2>content</h2>
-	{% if history.content is not none and history.content != "" %}
-	<pre>{{ history.content }}</pre>
+	{% if diffs[1] is not none and diffs[1] != "" %}
+	<pre class="diff">{{ diffs[1]|safe }}</pre>
 	{% else  %}
-	<p>no change</p>
+	<pre>no change</pre>
 	{% endif %}
 {% endblock %}

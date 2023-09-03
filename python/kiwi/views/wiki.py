@@ -1,6 +1,8 @@
 from datetime import datetime, timedelta
 from random import randint
 import math
+import re
+from urllib.parse import unquote
 
 from flask import Blueprint, render_template, request, redirect, url_for
 from diff_match_patch import diff_match_patch
@@ -107,7 +109,25 @@ def diff(title, event):
     if page is None or history is None:
         return redirect(url_for("wiki.history", title=title))
 
-    return render_template("diff.html", title=title, page=page, history=history)
+    title_diff = history.title
+    title_diff = replace(title_diff, "\n\+([^\n]*)", "\n##ins##+\\1##/ins##")
+    title_diff = replace(title_diff, "\n\-([^\n]*)", "\n##del##-\\1##/del##")
+    title_diff = replace(title_diff, "@@\s\-\d+,{0,1}\d*\s\+\d+,{0,1}\d*\s@@\n{0,1}", "")
+    title_diff = bleach.clean(unquote(title_diff))
+    title_diff = replace(title_diff, "##(ins|/ins|del|/del)##", "<\\1>")
+    content_diff = history.content
+    print(history.content)
+    content_diff = replace(content_diff, "\n\+([^\n]*)", "\n##ins##+\\1##/ins##")
+    content_diff = replace(content_diff, "\n\-([^\n]*)", "\n##del##-\\1##/del##")
+    content_diff = replace(content_diff, "@@\s\-\d+,{0,1}\d*\s\+\d+,{0,1}\d*\s@@\n{0,1}", "")
+    content_diff = replace(content_diff, "(%0D)*%0A", "%0A ")
+    content_diff = bleach.clean(unquote(content_diff))
+    content_diff = replace(content_diff, "##(ins|/ins|del|/del)##", "<\\1>")
+
+    return render_template("diff.html", title=title, page=page, history=history, diffs=(title_diff, content_diff))
+
+def replace(string, find, replace):
+    return re.sub(pattern=find, repl=replace, string=string)
 
 
 @bp.route("/rehash/<title>/<int:event>")

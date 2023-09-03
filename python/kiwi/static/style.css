@@ -42,3 +42,11 @@ textarea {
 button {
 	background-color: #eee;
 }
+.diff ins {
+	color: green;
+	text-decoration: none;
+}
+.diff del {
+	color: red;
+	text-decoration: none;
+}
