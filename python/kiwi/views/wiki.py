@@ -14,6 +14,11 @@ from kiwi import db
 from kiwi.models.wiki import Page, History
 from kiwi.error import TitleDuplicateException, PageLockException
 
+
+LINK_REGEX = "\[\[([^()\[\]\n\r*_`/\\\\]*)\]\]"
+LINK_REPLACE = "[\\1](/wiki/\\1)"
+
+
 bp = Blueprint("wiki", __name__)
 
 
@@ -45,8 +50,8 @@ def back(title, event):
 
     if back is None:
         return redirect(url_for("wiki.history", title=title))
-
-    return render_template("back.html", title=title, page=back, event=event)
+    else:
+        return render_template("back.html", title=title, page=back, event=event)
 
 
 @bp.route("/edit/<title>", methods=("GET", "POST"))
@@ -161,7 +166,8 @@ def make(title, event):
         back_title = apply_patch(back_title, history.title)
         back_content = apply_patch(back_content, history.content)
 
-    back_html = markdown(bleach.clean(back_content))
+    back_content_linked = replace(back_content, LINK_REGEX, LINK_REPLACE)
+    back_html = markdown(bleach.clean(back_content_linked))
 
     return Page(title=back_title, content=back_content, html=back_html)
 
@@ -176,7 +182,8 @@ def update(title, new_title, content, summary):
             raise TitleDuplicateException("page with new title already exists")
 
     if page is None:
-        html = markdown(bleach.clean(content))
+        content_linked = replace(content, LINK_REGEX, LINK_REPLACE)
+        html = markdown(bleach.clean(content_linked))
         page = Page(title=new_title, content=content, html=html)
         db.session.add(page)
 
@@ -215,7 +222,8 @@ def update(title, new_title, content, summary):
     history = History(page=locked, summary=summary or "edit", title=title_patch, content=content_patch, event=event, write=datetime.now())
     db.session.add(history)
 
-    html = markdown(bleach.clean(content))
+    content_linked = replace(content, LINK_REGEX, LINK_REPLACE)
+    html = markdown(bleach.clean(content_linked))
     locked.title = new_title
     locked.content = content
     locked.html = html
