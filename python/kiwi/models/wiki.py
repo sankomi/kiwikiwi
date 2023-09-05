@@ -9,6 +9,7 @@ class Page(db.Model):
     title = db.Column(db.String(50), unique=True, nullable=False)
     content = db.Column(db.Text)
     html = db.Column(db.Text)
+    text = db.Column(db.Text)
     lock = db.Column(db.DateTime)
     lock_id = db.Column(db.Integer)
     refresh = db.Column(db.DateTime, default=datetime.now())

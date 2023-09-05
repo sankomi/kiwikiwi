@@ -9,6 +9,7 @@ from diff_match_patch import diff_match_patch
 from sqlalchemy.exc import OperationalError
 from markdown import markdown
 import bleach
+from bs4 import BeautifulSoup
 
 from kiwi import db
 from kiwi.models.wiki import Page, History
@@ -109,6 +110,9 @@ def history_page(title, page):
 @bp.route("/diff/<title>/<int:event>")
 def diff(title, event):
     page = Page.query.filter_by(title=title).first()
+    if page is None:
+        return redirect(url_for("wiki.view", title=title))
+
     history = History.query.filter_by(event=event, page_id=page.id).first()
 
     if page is None or history is None:
@@ -152,6 +156,9 @@ def rehash(title, event):
 
 def make(title, event):
     page = Page.query.filter_by(title=title).first()
+    if page is None:
+        return None
+
     history = History.query.filter_by(event=event, page_id=page.id).first()
 
     if page is None or history is None:
@@ -184,7 +191,8 @@ def update(title, new_title, content, summary):
     if page is None:
         content_linked = replace(content, LINK_REGEX, LINK_REPLACE)
         html = markdown(bleach.clean(content_linked))
-        page = Page(title=new_title, content=content, html=html)
+        text = BeautifulSoup(html, features="html.parser").get_text()
+        page = Page(title=new_title, content=content, html=html, text=text)
         db.session.add(page)
 
         title_patch = get_patch("", new_title)
@@ -224,9 +232,11 @@ def update(title, new_title, content, summary):
 
     content_linked = replace(content, LINK_REGEX, LINK_REPLACE)
     html = markdown(bleach.clean(content_linked))
+    text = BeautifulSoup(html, features="html.parser").get_text()
     locked.title = new_title
     locked.content = content
     locked.html = html
+    locked.text = text
     locked.lock = None
     locked.lock_id = None
     locked.refresh = datetime.now()
