@@ -10,6 +10,10 @@
 		<title>{% block title %}{% endblock %}</title>
 	</head>
 	<body>
+		<form action="/search" method="get">
+			<input id="s" name="s" value="{{ search or "" }}">
+			<button>search</button>
+		</form>
 		{% block content %}{% endblock %}
 	</body>
 </html>

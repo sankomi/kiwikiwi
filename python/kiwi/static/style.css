@@ -22,9 +22,6 @@ label {
 	margin: 0.5rem 0;
 }
 input, textarea, button {
-	display: block;
-	width: 100%;
-	margin: 0.5rem 0;
 	padding: 0.5rem;
 	border: 1px solid #eee;
 
@@ -35,9 +32,17 @@ input, textarea, button {
 	line-height: inherit;
 }
 textarea {
-	min-height: 20rem;
-
 	resize: vertical;
+}
+.edit input,
+.edit textarea,
+.edit button {
+	display: block;
+	width: 100%;
+	margin: 0.5rem 0;
+}
+.edit textarea {
+	min-height: 20rem;
 }
 button {
 	background-color: #eee;

@@ -23,6 +23,17 @@ LINK_REPLACE = "[\\1](/wiki/\\1)"
 bp = Blueprint("wiki", __name__)
 
 
+@bp.route("/search")
+def search():
+    string = request.args.get("s")
+    if not string:
+        return render_template("search.html", search="", pages=None)
+
+    string = string.strip()
+
+    pages = Page.query.filter(Page.text.ilike(f"%{string}%")).all()
+    return render_template("search.html", search=string, pages=pages)
+
 @bp.route("/wiki/<title>")
 def view(title):
     page = Page.query.filter_by(title=title).first()
