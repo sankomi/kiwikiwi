@@ -31,7 +31,7 @@ def search():
 
     string = string.strip()
 
-    pages = Page.query.filter(Page.text.ilike(f"%{string}%")).all()
+    pages = Page.query.filter(Page.text.ilike(f"%{string}%") | Page.title.ilike(f"%{string}%")).all()
     return render_template("search.html", search=string, pages=pages)
 
 @bp.route("/wiki/<title>")
