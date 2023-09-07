@@ -28,11 +28,21 @@ def search():
     string = request.args.get("s")
     if not string:
         return render_template("search.html", search="", pages=None)
-
     string = string.strip()
 
+    current = request.args.get("p")
+    try:
+        current = int(current)
+        if current <= 0:
+            current = 1
+    except:
+        current = 1
+
     pages = Page.query.filter(Page.text.ilike(f"%{string}%") | Page.title.ilike(f"%{string}%")).all()
-    return render_template("search.html", search=string, pages=pages)
+    last = math.ceil(len(pages) / 10)
+    show = pages[(current - 1) * 10:current * 10]
+    return render_template("search.html", search=string, pages=show, current=current, last=last)
+
 
 @bp.route("/wiki/<title>")
 def view(title):
@@ -101,21 +111,21 @@ def history(title):
     if page is None:
         return redirect(url_for("wiki.view", title=title))
     else:
-        num_pages = math.ceil(len(page.historys) / 10)
-        historys = page.historys[0:10]
-        return render_template("history.html", page=page, pages=(1, num_pages), historys=historys)
+        last = math.ceil(len(page.historys) / 10)
+        historys = page.historys[:10]
+        return render_template("history.html", page=page, current=1, last=last, historys=historys)
 
 
-@bp.route("/history/<title>/<int:page>")
-def history_page(title, page):
-    the_page = Page.query.filter_by(title=title).first()
+@bp.route("/history/<title>/<int:last>")
+def history_page(title, current):
+    page = Page.query.filter_by(title=title).first()
 
-    if the_page is None:
+    if page is None:
         return redirect(url_for("wiki.view", title=title))
     else:
-        num_pages = math.ceil(len(the_page.historys) / 10)
-        historys = the_page.historys[(page - 1) * 10:page * 10]
-        return render_template("history.html", page=the_page, pages=(page, num_pages), historys=historys)
+        last = math.ceil(len(page.historys) / 10)
+        historys = page.historys[(current - 1) * 10:current * 10]
+        return render_template("history.html", page=the_page, current=current, last=last, historys=historys)
 
 
 @bp.route("/diff/<title>/<int:event>")

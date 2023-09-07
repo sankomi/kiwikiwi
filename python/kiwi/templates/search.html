@@ -1,9 +1,19 @@
 {% extends "base.html" %}
 
-{% block title %}search({{ search }});{% endblock %}
+{% block title %}
+{% if search is none or search == "" %}
+search();
+{% else %}
+search({{ search }}, {{ current }});
+{% endif %}
+{% endblock %}
 
 {% block content %}
-	<h1>search({{ search }});</h1>
+	{% if search is none or search == "" %}
+	<h1>search();</h1>
+	{% else %}
+	<h1>search({{ search }}, {{ current }});</h1>
+	{% endif %}
 	{% if pages is not none and pages | length > 0 %}
 	<ul>
 		{% for page in pages %}
@@ -19,6 +29,18 @@
 		</li>
 		{% endfor %}
 	</ul>
+	<div>
+		{% if current > 1 and current <= last %}
+		<a href="/search?s={{ search|urlencode }}&p={{ current - 1 }}">prev</a>
+		{% else %}
+		<span><del>prev</del></span>
+		{% endif %}
+		{% if current >= 0 and current < last %}
+		<a href="/search?s={{ search|urlencode }}&p={{ current + 1 }}">next</a>
+		{% else %}
+		<span><del>next</del></span>
+		{% endif %}
+	</div>
 	{% else %}
 	<p>no pages found</p>
 	{% endif %}

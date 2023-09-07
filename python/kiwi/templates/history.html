@@ -1,9 +1,9 @@
 {% extends "base.html" %}
 
-{% block title %}history({{ page.title }}, {{ pages[0] }});{% endblock %}
+{% block title %}history({{ page.title }}, {{ current }});{% endblock %}
 
 {% block content %}
-	<h1>history(<a href="/wiki/{{ page.title|urlencode }}">{{ page.title }}</a>, {{ pages[0] }});</h1>
+	<h1>history(<a href="/wiki/{{ page.title|urlencode }}">{{ page.title }}</a>, {{ current }});</h1>
 	<div>
 		<a href="/edit/{{ page.title|urlencode }}">edit</a>
 	</div>
@@ -20,14 +20,15 @@
 		{% endfor %}
 	</ul>
 	<div>
-		{% if pages[0] > 1 and pages[0] <= pages[1] %}
-		<a href="/history/{{ page.title|urlencode }}/{{ pages[0] - 1 }}">prev</a>
+		{% if current > 1 and current <= last %}
+		<a href="/history/{{ page.title|urlencode }}/{{ current - 1 }}">prev</a>
 		{% else %}
 		<span><del>prev</del></span>
 		{% endif %}
-		{% if pages[0] >= 0 and pages[0] < pages[1] %}
-		<a href="/history/{{ page.title|urlencode }}/{{ pages[0] + 1 }}">next</a>
+		{% if current >= 0 and current < last %}
+		<a href="/history/{{ page.title|urlencode }}/{{ current + 1 }}">next</a>
 		{% else %}
 		<span><del>next</del></span>
 		{% endif %}
+	</div>
 {% endblock %}
