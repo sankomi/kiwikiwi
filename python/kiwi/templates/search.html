@@ -8,12 +8,15 @@ search({{ search }}, {{ current }});
 {% endif %}
 {% endblock %}
 
-{% block content %}
+{% block header %}
 	{% if search is none or search == "" %}
 	<h1>search();</h1>
 	{% else %}
 	<h1>search({{ search }}, {{ current }});</h1>
 	{% endif %}
+{% endblock %}
+
+{% block content %}
 	{% if pages is not none and pages | length > 0 %}
 	<ul>
 		{% for page in pages %}

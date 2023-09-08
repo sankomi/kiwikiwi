@@ -2,11 +2,18 @@
 
 {% block title %}history({{ page.title }}, {{ current }});{% endblock %}
 
-{% block content %}
+{% block header %}
 	<h1>history(<a href="/wiki/{{ page.title|urlencode }}">{{ page.title }}</a>, {{ current }});</h1>
-	<div>
+{% endblock %}
+
+{% block nav %}
+	<nav>
 		<a href="/edit/{{ page.title|urlencode }}">edit</a>
-	</div>
+		<a href="/history/{{ page.title|urlencode }}">history</a>
+	</nav>
+{% endblock %}
+
+{% block content %}
 	<ul>
 		{% for history in historys %}
 		<li>

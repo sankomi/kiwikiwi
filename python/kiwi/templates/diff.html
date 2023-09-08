@@ -2,13 +2,20 @@
 
 {% block title %}diff({{ title }}, {{ history.event }});{% endblock %}
 
-{% block content %}
+{% block header %}
 	<h1>diff(<a href="/wiki/{{ title|urlencode }}">{{ title }}</a>, {{ history.event }});</h1>
-	<div>
+{% endblock %}
+
+{% block nav %}
+	<nav>
+		<a href="/edit/{{ title|urlencode }}">edit</a>
+		<a href="/history/{{ title|urlencode }}">history</a>
 		<a href="/back/{{ title|urlencode }}/{{ history.event|urlencode }}">view</a>
 		<a href="/rehash/{{ title|urlencode }}/{{ history.event|urlencode }}">rehash</a>
-		<a href="/history/{{ title|urlencode }}">history</a>
-	</div>
+	</nav>
+{% endblock %}
+
+{% block content %}
 	<h2>title</h2>
 	{% if diffs[0] is not none and diffs[0] != "" %}
 	<pre class="diff">{{ diffs[0]|safe }}</pre>

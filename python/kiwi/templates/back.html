@@ -2,11 +2,18 @@
 
 {% block title %}back({{ title }}, {{ event }});{% endblock %}
 
-{% block content %}
+{% block header %}
 	<h1>back(<a href="/wiki/{{ title|urlencode }}">{{ title }}</a>, {{ event }});</h1>
-	<div>
-		<a href="/rehash/{{ title|urlencode }}/{{ event|urlencode }}">rehash</a>
+{% endblock %}
+
+{% block nav %}
+	<nav>
+		<a href="/edit/{{ title|urlencode }}">edit</a>
 		<a href="/history/{{ title|urlencode }}">history</a>
-	</div>
+		<a href="/rehash/{{ title|urlencode }}/{{ event|urlencode }}">rehash</a>
+	</nav>
+{% endblock %}
+
+{% block content %}
 	<div>{{ page.html|safe }}</div>
 {% endblock %}

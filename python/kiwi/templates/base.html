@@ -14,6 +14,8 @@
 			<input id="s" name="s" value="{{ search or "" }}">
 			<button>search</button>
 		</form>
+		{% block header %}{% endblock %}
+		{% block nav %}{% endblock %}
 		{% block content %}{% endblock %}
 	</body>
 </html>

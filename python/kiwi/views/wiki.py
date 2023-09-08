@@ -4,7 +4,7 @@ import math
 import re
 from urllib.parse import unquote
 
-from flask import Blueprint, render_template, request, redirect, url_for
+from flask import Blueprint, render_template, request, redirect, url_for, abort
 from diff_match_patch import diff_match_patch
 from sqlalchemy.exc import OperationalError
 from markdown import markdown
@@ -16,6 +16,7 @@ from kiwi.models.wiki import Page, History
 from kiwi.error import TitleDuplicateException, PageLockException
 
 
+TITLE_REGEX = "[()\[\]\\n\\r*_`/\\\\]"
 LINK_REGEX = "\[\[([^()\[\]\n\r*_`/\\\\]*)\]\]"
 LINK_REPLACE = "[\\1](/wiki/\\1)"
 
@@ -49,6 +50,8 @@ def view(title):
     page = Page.query.filter_by(title=title).first()
 
     if page is None:
+        if re.search(TITLE_REGEX, title):
+            abort(404)
         return render_template("not-exist.html", title=title)
     else:
         return render_template("view.html", page=page)
@@ -71,6 +74,8 @@ def back(title, event):
     back = make(title, event)
 
     if back is None:
+        if re.search(TITLE_REGEX, title):
+            abort(404)
         return redirect(url_for("wiki.history", title=title))
     else:
         return render_template("back.html", title=title, page=back, event=event)
@@ -82,6 +87,8 @@ def edit(title, summary=None):
 
     if request.method == "GET":
         if page is None:
+            if re.search(TITLE_REGEX, title):
+                abort(404)
             page = Page(title=title, content="")
 
         return render_template("edit.html", page=page, summary=summary)
@@ -90,7 +97,8 @@ def edit(title, summary=None):
         content = request.form["content"]
         summary = request.form["summary"]
 
-        if "/" in new_title:
+        if re.search(TITLE_REGEX, new_title):
+            new_title = replace(new_title, TITLE_REGEX, "")
             page = Page(title=new_title, content=content)
             return render_template("edit.html", page=page, summary=summary)
 
@@ -109,6 +117,8 @@ def history(title):
     page = Page.query.filter_by(title=title).first()
 
     if page is None:
+        if re.search(TITLE_REGEX, title):
+            abort(404)
         return redirect(url_for("wiki.view", title=title))
     else:
         last = math.ceil(len(page.historys) / 10)
@@ -121,6 +131,8 @@ def history_page(title, current):
     page = Page.query.filter_by(title=title).first()
 
     if page is None:
+        if re.search(TITLE_REGEX, title):
+            abort(404)
         return redirect(url_for("wiki.view", title=title))
     else:
         last = math.ceil(len(page.historys) / 10)
@@ -132,11 +144,13 @@ def history_page(title, current):
 def diff(title, event):
     page = Page.query.filter_by(title=title).first()
     if page is None:
+        if re.search(TITLE_REGEX, title):
+            abort(404)
         return redirect(url_for("wiki.view", title=title))
 
     history = History.query.filter_by(event=event, page_id=page.id).first()
 
-    if page is None or history is None:
+    if history is None:
         return redirect(url_for("wiki.history", title=title))
 
     title_diff = history.title
@@ -146,7 +160,6 @@ def diff(title, event):
     title_diff = bleach.clean(unquote(title_diff))
     title_diff = replace(title_diff, "##(ins|/ins|del|/del)##", "<\\1>")
     content_diff = history.content
-    print(history.content)
     content_diff = replace(content_diff, "\n\+([^\n]*)", "\n##ins##+\\1##/ins##")
     content_diff = replace(content_diff, "\n\-([^\n]*)", "\n##del##-\\1##/del##")
     content_diff = replace(content_diff, "@@\s\-\d+,{0,1}\d*\s\+\d+,{0,1}\d*\s@@\n{0,1}", "")
@@ -165,6 +178,8 @@ def rehash(title, event):
     back = make(title, event)
 
     if back is None:
+        if re.search(TITLE_REGEX, title):
+            abort(404)
         return redirect(url_for("wiki.view", title=title))
 
     try:

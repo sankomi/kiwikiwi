@@ -2,11 +2,18 @@
 
 {% block title %}edit({{ page.title }});{% endblock %}
 
-{% block content %}
+{% block header %}
 	<h1>edit(<a href="/wiki/{{ page.title|urlencode }}">{{ page.title }}</a>);</h1>
-	<div>
+{% endblock %}
+
+{% block nav %}
+	<nav>
+		<a href="/edit/{{ page.title|urlencode }}">edit</a>
 		<a href="/history/{{ page.title|urlencode }}">history</a>
-	</div>
+	</nav>
+{% endblock %}
+
+{% block content %}
 	<form method="post" class="edit">
 		<div>
 			<label for="title">title</label>
