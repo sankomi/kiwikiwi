@@ -1,0 +1,54 @@
+package sanko.kiwikiwi.domain.page;
+
+import java.util.List;
+import java.time.LocalDateTime;
+import jakarta.persistence.*; //Entity, Table, Id, Column, GeneratedValue, GenerationType, OneToMany, OrderBy
+
+import lombok.*; //Builder, Getter, NoArgsConstructor
+import org.springframework.data.annotation.LastModifiedDate;
+
+import sanko.kiwikiwi.domain.history.History;
+
+@Getter
+@NoArgsConstructor
+@Entity
+@Table(name = "pages")
+public class Page {
+
+	@Id
+	@Column(name = "id")
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	private Long id;
+
+	@Column(name = "title", length = 50, unique = true, nullable = false)
+	private String title;
+
+	@Column(name = "content")
+	private String content;
+
+	@Column(name = "html")
+	private String html;
+
+	@Column(name = "text")
+	private String text;
+
+	@Column(name = "lock")
+	private LocalDateTime lock;
+
+	@Column(name = "lock_id")
+	private Integer lockId;
+
+	@LastModifiedDate
+	@Column(name = "refresh")
+	private LocalDateTime refresh;
+
+	@OneToMany(mappedBy = "page")
+	@OrderBy("id DESC")
+	private List<History> historys;
+
+	@Builder
+	public Page(String title, String content) {
+		this.title = title;
+		this.content = content;
+	}
+}
