@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+
+{% block title %}edit({{ page.title }});{% endblock %}
+
+{% block header %}
+	<h1>edit(<a href="/wiki/{{ page.title|urlencode }}">{{ page.title }}</a>);</h1>
+{% endblock %}
+
+{% block nav %}
+	<nav>
+		<a href="/edit/{{ page.title|urlencode }}">edit</a>
+		<a href="/history/{{ page.title|urlencode }}">history</a>
+	</nav>
+{% endblock %}
+
+{% block content %}
+	<form method="post" class="edit">
+		<div>
+			<label for="title">title</label>
+			<input id="title" name="title" value="{{ page.title }}">
+		</div>
+		<div>
+			<label for="summary">summary</label>
+			<input id="summary" name="summary" value="{% if summary is not none %}{{ summary }}{% endif %}">
+		</div>
+		<div>
+			<label for="content">content</label>
+			<textarea id="content" name="content">{{ page.content }}</textarea>
+		</div>
+		<div>
+			<button>save</button>
+		</div>
+	</form>
+{% endblock %}

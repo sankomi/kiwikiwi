@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block header %}
+	<h1>{{ title }}</h1>
+{% endblock %}
+
+{% block nav %}
+	<nav>
+		<a href="/edit/{{ title|urlencode }}">edit</a>
+		<a href="/history/{{ title|urlencode }}">history</a>
+	</nav>
+{% endblock %}
+
+
+{% block content %}
+	<p>page does not exist! <a href="/edit/{{ title|urlencode }}">create</a></p>
+{% endblock %}

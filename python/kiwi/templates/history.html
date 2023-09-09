@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+
+{% block title %}history({{ page.title }}, {{ current }});{% endblock %}
+
+{% block header %}
+	<h1>history(<a href="/wiki/{{ page.title|urlencode }}">{{ page.title }}</a>, {{ current }});</h1>
+{% endblock %}
+
+{% block nav %}
+	<nav>
+		<a href="/edit/{{ page.title|urlencode }}">edit</a>
+		<a href="/history/{{ page.title|urlencode }}">history</a>
+	</nav>
+{% endblock %}
+
+{% block content %}
+	<ul>
+		{% for history in historys %}
+		<li>
+			<p>{{ history.summary }} - {{ history.write }}</p>
+			<div>
+				<a href="/back/{{ page.title|urlencode }}/{{ history.event|urlencode }}">view</a>
+				<a href="/diff/{{ page.title|urlencode }}/{{ history.event|urlencode }}">diff</a>
+				<a href="/rehash/{{ page.title|urlencode }}/{{ history.event|urlencode }}">rehash</a>
+			</div>
+		</li>
+		{% endfor %}
+	</ul>
+	<div>
+		{% if current > 1 and current <= last %}
+		<a href="/history/{{ page.title|urlencode }}/{{ current - 1 }}">prev</a>
+		{% else %}
+		<span><del>prev</del></span>
+		{% endif %}
+		{% if current >= 0 and current < last %}
+		<a href="/history/{{ page.title|urlencode }}/{{ current + 1 }}">next</a>
+		{% else %}
+		<span><del>next</del></span>
+		{% endif %}
+	</div>
+{% endblock %}

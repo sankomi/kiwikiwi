@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+
+{% block title %}
+{% if search is none or search == "" %}
+search();
+{% else %}
+search({{ search }}, {{ current }});
+{% endif %}
+{% endblock %}
+
+{% block header %}
+	{% if search is none or search == "" %}
+	<h1>search();</h1>
+	{% else %}
+	<h1>search({{ search }}, {{ current }});</h1>
+	{% endif %}
+{% endblock %}
+
+{% block content %}
+	{% if pages is not none and pages | length > 0 %}
+	<ul>
+		{% for page in pages %}
+		<li>
+			<h2>
+				<a href="/wiki/{{ page.title|urlencode }}">{{ page.title }}</a>
+			</h2>
+			{% if page.text| length > 100 %}
+			<p>{{ page.text[:100] }}...</p>
+			{% else %}
+			<p>{{ page.text }}</p>
+			{% endif %}
+		</li>
+		{% endfor %}
+	</ul>
+	<div>
+		{% if current > 1 and current <= last %}
+		<a href="/search?s={{ search|urlencode }}&p={{ current - 1 }}">prev</a>
+		{% else %}
+		<span><del>prev</del></span>
+		{% endif %}
+		{% if current >= 0 and current < last %}
+		<a href="/search?s={{ search|urlencode }}&p={{ current + 1 }}">next</a>
+		{% else %}
+		<span><del>next</del></span>
+		{% endif %}
+	</div>
+	{% else %}
+	<p>no pages found</p>
+	{% endif %}
+{% endblock %}

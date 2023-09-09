@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<meta name="robots" content="noindex">
+
+		<link rel="stylesheet" href="{{ url_for("static", filename="style.css") }}">
+
+		<title>{% block title %}{% endblock %}</title>
+	</head>
+	<body>
+		<form action="/search" method="get">
+			<input id="s" name="s" value="{{ search or "" }}">
+			<button>search</button>
+		</form>
+		{% block header %}{% endblock %}
+		{% block nav %}{% endblock %}
+		{% block content %}{% endblock %}
+	</body>
+</html>

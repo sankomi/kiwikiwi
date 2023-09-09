@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+
+{% block title %}diff({{ title }}, {{ history.event }});{% endblock %}
+
+{% block header %}
+	<h1>diff(<a href="/wiki/{{ title|urlencode }}">{{ title }}</a>, {{ history.event }});</h1>
+{% endblock %}
+
+{% block nav %}
+	<nav>
+		<a href="/edit/{{ title|urlencode }}">edit</a>
+		<a href="/history/{{ title|urlencode }}">history</a>
+		<a href="/back/{{ title|urlencode }}/{{ history.event|urlencode }}">view</a>
+		<a href="/rehash/{{ title|urlencode }}/{{ history.event|urlencode }}">rehash</a>
+	</nav>
+{% endblock %}
+
+{% block content %}
+	<h2>title</h2>
+	{% if diffs[0] is not none and diffs[0] != "" %}
+	<pre class="diff">{{ diffs[0]|safe }}</pre>
+	{% else  %}
+	<pre>no change</pre>
+	{% endif %}
+
+	<h2>content</h2>
+	{% if diffs[1] is not none and diffs[1] != "" %}
+	<pre class="diff">{{ diffs[1]|safe }}</pre>
+	{% else  %}
+	<pre>no change</pre>
+	{% endif %}
+{% endblock %}
