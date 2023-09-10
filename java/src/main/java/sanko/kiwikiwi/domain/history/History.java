@@ -40,7 +40,8 @@ public class History {
 	private LocalDateTime write;
 
 	@Builder
-	public History(Integer event, String summary, String title, String content) {
+	public History(Page page, Integer event, String summary, String title, String content) {
+		this.page = page;
 		this.event = event;
 		this.summary = summary;
 		this.title = title;

@@ -4,11 +4,17 @@ import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+import sanko.kiwikiwi.domain.page.Page;
+
 class HistoryTest {
 
 	@Test
 	void testHistoryBuilder() {
 		//given
+		String pageTitle = "pagetitle";
+		String pageContent = "pagecontent";
+		Page page = new Page(pageTitle, pageContent);
+
 		Integer event = 1;
 		String summary = "summary";
 		String title = "title";
@@ -16,6 +22,7 @@ class HistoryTest {
 
 		//when
 		History history = History.builder()
+			.page(page)
 			.event(event)
 			.summary(summary)
 			.title(title)
@@ -27,6 +34,9 @@ class HistoryTest {
 		assertEquals(summary, history.getSummary());
 		assertEquals(title, history.getTitle());
 		assertEquals(content, history.getContent());
+
+		assertEquals(pageTitle, history.getPage().getTitle());
+		assertEquals(pageContent, history.getPage().getContent());
 	}
 
 }
