@@ -33,6 +33,12 @@
 			<optional>true</optional>
 		</dependency>
 
+		<!-- template -->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-thymeleaf</artifactId>
+		</dependency>
+
 		<!-- database -->
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
