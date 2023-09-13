@@ -6,6 +6,9 @@ import jakarta.persistence.*; //Entity, Table, Id, Column, GeneratedValue, Gener
 
 import lombok.*; //Builder, Getter, NoArgsConstructor
 import org.springframework.data.annotation.LastModifiedDate;
+import org.commonmark.node.Node;
+import org.commonmark.parser.Parser;
+import org.commonmark.renderer.html.HtmlRenderer;
 
 import sanko.kiwikiwi.domain.history.History;
 
@@ -50,5 +53,22 @@ public class Page {
 	public Page(String title, String content) {
 		this.title = title;
 		this.content = content;
+		Parser parser = Parser.builder().build();
+		Node node = parser.parse(content);
+		HtmlRenderer renderer = HtmlRenderer.builder().build();
+		this.html = renderer.render(node);
 	}
+
+	public void updateTitle(String title) {
+		this.title = title;
+	}
+
+	public void updateContent(String content) {
+		this.content = content;
+		Parser parser = Parser.builder().build();
+		Node node = parser.parse(content);
+		HtmlRenderer renderer = HtmlRenderer.builder().build();
+		this.html = renderer.render(node);
+	}
+
 }

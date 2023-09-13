@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<meta name="robots" content="noindex">
+
+		<link rel="stylesheet" href="/style.css">
+
+		<title th:text="${'edit(' + page.title + ');'}">kiwikiwi</title>
+	</head>
+	<body>
+		<form action="/search" method="get">
+			<input id="s" name="s" value="">
+			<button>search</button>
+		</form>
+		<h1>
+			edit(<a th:href="${'/wiki/' + #uris.escapePath(page.title)}" th:text="${page.title}"></a>);
+		</h1>
+		<nav>
+			<a th:href="${'/edit/' + #uris.escapePath(page.title)}">edit</a>
+			<a th:href="${'/history/' + #uris.escapePath(page.title)}">history</a>
+		</nav>
+		<form method="post" class="edit">
+			<div>
+				<label for="title">title</label>
+				<input id="title" name="title" th:value="${page.newTitle}">
+			</div>
+			<div>
+				<label for="summary">summary</label>
+				<input id="summary" name="summary" th:value="${summary == null? '': summary}">
+			</div>
+			<div>
+				<label for="content">content</label>
+				<textarea id="content" name="content" th:text="${page.content}"></textarea>
+			</div>
+			<div>
+				<button>save</button>
+			</div>
+		</form>
+	</body>
+</html>
