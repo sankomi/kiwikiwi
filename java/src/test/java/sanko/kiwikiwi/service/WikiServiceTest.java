@@ -1,15 +1,18 @@
 package sanko.kiwikiwi.service;
 
+import java.util.*; //List, Arrays
+
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.context.annotation.Import;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.web.server.ResponseStatusException;
 
 import static org.springframework.test.util.ReflectionTestUtils.setField;
 import static org.mockito.Mockito.when;
-import static org.junit.jupiter.api.Assertions.*; //assertEquals, assertTrue
+import static org.junit.jupiter.api.Assertions.*; //assertEquals, assertTrue, assertThrows
 
 import sanko.kiwikiwi.domain.page.*; //Page, PageRepository
 import sanko.kiwikiwi.dto.*; //PageView, PageEditRequest, PageEdit
@@ -50,6 +53,42 @@ class WikiServiceTest {
 		assertEquals(title, pageView.getTitle());
 		assertTrue(pageView.getHtml().contains(heading));
 		assertTrue(pageView.getHtml().contains(paragraph));
+	}
+
+	@Test
+	void testWikiPageNotFound() {
+		//given
+		String prefix = "notfound";
+		String title = prefix + "title";
+
+		when(pageRepository.findOneByTitle(title))
+			.thenReturn(null);
+
+		//when
+		PageView pageView = wikiService.view(title);
+
+		//then
+		assertEquals(null, pageView);
+	}
+
+	@Test
+	void testWikiPageInvalidTitle() {
+		List<String> invalids = Arrays.asList("(", ")", "[", "]", "\r", "\n", "*", "_", "`", "/", "\\");
+
+		for (String s : invalids) {
+			//given
+			String title = String.format("invalid%stitle", s);
+
+			when(pageRepository.findOneByTitle(title))
+				.thenReturn(null);
+
+			//whenthen
+			ResponseStatusException exception = assertThrows(
+				ResponseStatusException.class,
+				() -> wikiService.view(title)
+			);
+			assertTrue(exception.getMessage().contains("404"));
+		}
 	}
 
 	@Test

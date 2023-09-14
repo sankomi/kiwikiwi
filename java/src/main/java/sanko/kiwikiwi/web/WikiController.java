@@ -17,6 +17,12 @@ public class WikiController {
 	@GetMapping("/wiki/{title}")
 	public String view(@PathVariable("title") String title, Model model) {
 		PageView pageView = wikiService.view(title);
+
+		if (pageView == null) {
+			model.addAttribute("title", title);
+			return "not-exist";
+		}
+
 		model.addAttribute("page", pageView);
 		return "view";
 	}
