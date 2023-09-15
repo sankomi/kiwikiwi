@@ -1,10 +1,13 @@
 package sanko.kiwikiwi.domain.history;
 
 import java.time.LocalDateTime;
+import java.util.*; //List, LinkedList
 import jakarta.persistence.*; //Entity, Table, Id, Column, GeneratedValue, GenerationType, JoinColumn, ManyToOne
 
 import lombok.*; //Builder, Getter, NoArgsConstructor
 import org.springframework.data.annotation.CreatedDate;
+import org.bitbucket.cowwoc.diffmatchpatch.DiffMatchPatch;
+import org.bitbucket.cowwoc.diffmatchpatch.DiffMatchPatch.*; //Diff, Patch
 
 import sanko.kiwikiwi.domain.page.Page;
 
@@ -44,7 +47,23 @@ public class History {
 		this.page = page;
 		this.event = event;
 		this.summary = summary;
-		this.title = title;
-		this.content = content;
+		this.title = getPatch(page.getTitle(), title);
+		this.content = getPatch(page.getContent(), content);
 	}
+
+	private String getPatch(String text1, String text2) {
+		DiffMatchPatch dmp = new DiffMatchPatch();
+		LinkedList<Diff> diff = dmp.diffMain(text1, text2, false);
+		dmp.diffCleanupSemantic(diff);
+		LinkedList<Patch> patch = dmp.patchMake(diff);
+		return dmp.patchToText(patch);
+	}
+
+	private String applyPatch(String text, String patchText) {
+		DiffMatchPatch dmp = new DiffMatchPatch();
+		List<Patch> patch = dmp.patchFromText(patchText);
+		Object[] patched = dmp.patchApply(new LinkedList<>(patch), text);
+		return (String) patched[0];
+	}
+
 }

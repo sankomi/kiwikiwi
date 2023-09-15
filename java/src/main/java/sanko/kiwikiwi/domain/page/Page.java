@@ -59,6 +59,11 @@ public class Page {
 		this.html = renderer.render(node);
 	}
 
+	public void update(String title, String content) {
+		updateTitle(title);
+		updateContent(content);
+	}
+
 	public void updateTitle(String title) {
 		this.title = title;
 	}

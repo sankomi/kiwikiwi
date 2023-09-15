@@ -32,8 +32,6 @@ class HistoryTest {
 		//then
 		assertEquals(event, history.getEvent());
 		assertEquals(summary, history.getSummary());
-		assertEquals(title, history.getTitle());
-		assertEquals(content, history.getContent());
 
 		assertEquals(pageTitle, history.getPage().getTitle());
 		assertEquals(pageContent, history.getPage().getContent());

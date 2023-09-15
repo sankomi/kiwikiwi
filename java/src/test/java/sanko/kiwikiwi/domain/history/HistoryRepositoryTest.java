@@ -54,8 +54,6 @@ class HistoryRepositoryTest {
 		assertTrue(history.getId() > 0L);
 		assertEquals(event, history.getEvent());
 		assertEquals(summary, history.getSummary());
-		assertEquals(title, history.getTitle());
-		assertEquals(content, history.getContent());
 
 		assertEquals(pageTitle, history.getPage().getTitle());
 		assertEquals(pageContent, history.getPage().getContent());
@@ -91,8 +89,6 @@ class HistoryRepositoryTest {
 			assertEquals(id, h.getId());
 			assertEquals(event, h.getEvent());
 			assertEquals(summary, h.getSummary());
-			assertEquals(title, h.getTitle());
-			assertEquals(content, h.getContent());
 
 			assertEquals(pageTitle, h.getPage().getTitle());
 			assertEquals(pageContent, h.getPage().getContent());

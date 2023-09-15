@@ -15,6 +15,7 @@ import static org.mockito.Mockito.when;
 import static org.junit.jupiter.api.Assertions.*; //assertEquals, assertTrue, assertThrows
 
 import sanko.kiwikiwi.domain.page.*; //Page, PageRepository
+import sanko.kiwikiwi.domain.history.*; //History, HistoryRepository
 import sanko.kiwikiwi.dto.*; //PageView, PageEditRequest, PageEdit
 
 @ExtendWith(SpringExtension.class)
@@ -26,6 +27,9 @@ class WikiServiceTest {
 
 	@MockBean
 	private PageRepository pageRepository;
+
+	@MockBean
+	private HistoryRepository historyRepository;
 
 	private static Long pageId = 0L;
 

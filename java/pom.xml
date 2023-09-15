@@ -63,6 +63,12 @@
 			<artifactId>commonmark</artifactId>
 			<version>0.21.0</version>
 		</dependency>
+		<!-- diff match patch -->
+		<dependency>
+			<groupId>org.bitbucket.cowwoc</groupId>
+			<artifactId>diff-match-patch</artifactId>
+			<version>1.2</version>
+		</dependency>
 
 		<!-- test -->
 		<dependency>

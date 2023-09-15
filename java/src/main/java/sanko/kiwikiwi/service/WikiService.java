@@ -9,6 +9,7 @@ import org.springframework.web.server.ResponseStatusException;
 import org.springframework.http.HttpStatus;
 
 import sanko.kiwikiwi.domain.page.*; //Page, PageRepository
+import sanko.kiwikiwi.domain.history.*; //History, HistoryRepository
 import sanko.kiwikiwi.dto.*; //PageView, PageEditRequest, PageEdit
 import sanko.kiwikiwi.Constants;
 
@@ -17,6 +18,7 @@ import sanko.kiwikiwi.Constants;
 public class WikiService {
 
 	private final PageRepository pageRepository;
+	private final HistoryRepository historyRepository;
 
 	private boolean match(String string, String regex) {
 		return Pattern.compile(regex).matcher(string).find();
@@ -63,24 +65,45 @@ public class WikiService {
 
 		if (page == null) {
 			page = Page.builder()
+				.title("")
+				.content("")
+				.build();
+			History history = History.builder()
+				.page(page)
+				.event(0)
 				.title(newTitle)
 				.content(content)
 				.build();
+			page.update(newTitle, content);
 
 			if (newPage == null) {
 				pageRepository.save(page);
+				historyRepository.save(history);
 				return new PageEdit("/wiki/" + newTitle);
 			} else {
 				return new PageEdit(page, title);
 			}
 		} else {
 			if (title.equals(newTitle)) {
+				History history = History.builder()
+					.page(page)
+					.event(0)
+					.title(title)
+					.content(content)
+					.build();
 				page.updateContent(content);
+				historyRepository.save(history);
 				return new PageEdit("/wiki/" + title);
 			} else {
 				if (newPage == null) {
-					page.updateTitle(newTitle);
-					page.updateContent(content);
+					History history = History.builder()
+						.page(page)
+						.event(0)
+						.title(newTitle)
+						.content(content)
+						.build();
+					page.update(newTitle, content);
+					historyRepository.save(history);
 					return new PageEdit("/wiki/" + newTitle);
 				} else {
 					page = Page.builder()
