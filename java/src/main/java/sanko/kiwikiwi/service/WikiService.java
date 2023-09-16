@@ -54,14 +54,51 @@ public class WikiService {
 		return new PageEdit(page);
 	}
 
-	@Transactional
 	public PageEdit edit(String title, PageEditRequest request) {
 		String newTitle = request.getTitle();
 		String content = request.getContent();
 		String summary = request.getSummary();
 
+		if (match(newTitle, Constants.TITLE_REGEX)) {
+			newTitle = newTitle.replaceAll(Constants.TITLE_REGEX, "");
+			Page page = Page.builder()
+				.title(title)
+				.content(content)
+				.build();
+			return new PageEdit(page, newTitle, summary);
+		}
+
+		try {
+			Page updated = update(title, newTitle, content, summary);
+			return new PageEdit("/wiki/" + updated.getTitle());
+		} catch (TitleDuplicateException e) {
+			Page page = Page.builder()
+				.title(title)
+				.content(content)
+				.build();
+			return new PageEdit(page, newTitle, summary);
+		}
+	}
+
+	private class TitleDuplicateException extends Exception {
+
+		public TitleDuplicateException(String message) {
+			super(message);
+		}
+
+	}
+
+	@Transactional
+	private Page update(String title, String newTitle, String content, String summary) throws TitleDuplicateException {
 		Page page = pageRepository.findOneByTitle(title);
-		Page newPage = pageRepository.findOneByTitle(newTitle);
+
+		if (!title.equals(newTitle)) {
+			Page newPage = pageRepository.findOneByTitle(newTitle);
+
+			if (newPage != null) {
+				throw new TitleDuplicateException("page with new title already exists");
+			}
+		}
 
 		if (page == null) {
 			page = Page.builder()
@@ -71,48 +108,26 @@ public class WikiService {
 			History history = History.builder()
 				.page(page)
 				.event(0)
+				.summary(summary)
 				.title(newTitle)
 				.content(content)
 				.build();
 			page.update(newTitle, content);
 
-			if (newPage == null) {
-				pageRepository.save(page);
-				historyRepository.save(history);
-				return new PageEdit("/wiki/" + newTitle);
-			} else {
-				return new PageEdit(page, title);
-			}
+			pageRepository.save(page);
+			historyRepository.save(history);
+			return page;
 		} else {
-			if (title.equals(newTitle)) {
-				History history = History.builder()
-					.page(page)
-					.event(0)
-					.title(title)
-					.content(content)
-					.build();
-				page.updateContent(content);
-				historyRepository.save(history);
-				return new PageEdit("/wiki/" + title);
-			} else {
-				if (newPage == null) {
-					History history = History.builder()
-						.page(page)
-						.event(0)
-						.title(newTitle)
-						.content(content)
-						.build();
-					page.update(newTitle, content);
-					historyRepository.save(history);
-					return new PageEdit("/wiki/" + newTitle);
-				} else {
-					page = Page.builder()
-						.title(newTitle)
-						.content(content)
-						.build();
-					return new PageEdit(page, title);
-				}
-			}
+			History history = History.builder()
+				.page(page)
+				.event(0)
+				.summary(summary)
+				.title(newTitle)
+				.content(content)
+				.build();
+			page.update(newTitle, content);
+			historyRepository.save(history);
+			return page;
 		}
 	}
 

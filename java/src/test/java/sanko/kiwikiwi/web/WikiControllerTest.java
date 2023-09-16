@@ -109,7 +109,7 @@ class WikiControllerTest {
 		Page page = createPage(title, content);
 
 		when(wikiService.edit(eq(title), any(PageEditRequest.class)))
-			.thenReturn(new PageEdit(page, title));
+			.thenReturn(new PageEdit(page, title, summary));
 
 		//whenthen
 		mockMvc.perform(
