@@ -1,6 +1,7 @@
 package sanko.kiwikiwi.service;
 
 import java.util.*; //List, Arrays
+import java.time.LocalDateTime;
 
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
@@ -11,8 +12,10 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.web.server.ResponseStatusException;
 
 import static org.springframework.test.util.ReflectionTestUtils.setField;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*; //when, doAnswer
 import static org.junit.jupiter.api.Assertions.*; //assertEquals, assertTrue, assertThrows
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 
 import sanko.kiwikiwi.domain.page.*; //Page, PageRepository
 import sanko.kiwikiwi.domain.history.*; //History, HistoryRepository
@@ -24,6 +27,12 @@ class WikiServiceTest {
 
 	@Autowired
 	private WikiService wikiService;
+
+	@MockBean
+	private PageService pageService;
+
+	@MockBean
+	private HistoryService historyService;
 
 	@MockBean
 	private PageRepository pageRepository;
@@ -132,6 +141,13 @@ class WikiServiceTest {
 
 		when(pageRepository.findOneByTitle(title))
 			.thenReturn(null);
+		doAnswer(invocation -> {
+			Page page = (Page) invocation.getArguments()[0];
+			page.update(title, content);
+			return null;
+		})
+			.when(pageService)
+			.save(any(Page.class), eq(title), eq(content));
 
 		//when
 		PageEdit pageEdit = wikiService.edit(title, request);
@@ -181,6 +197,22 @@ class WikiServiceTest {
 		String content = String.format("# %s\n\n%s", heading, paragraph);
 
 		Page page = createPage(title, content);
+		when(pageRepository.findOneByTitleAndLockAndLockId(eq(title), any(LocalDateTime.class), any(Integer.class)))
+			.thenReturn(page);
+		when(pageService.checkLock(title))
+			.thenReturn(false);
+		when(pageService.checkLock(eq(title), any(LocalDateTime.class), any(Integer.class)))
+			.thenReturn(false);
+		doAnswer(invocation -> {
+			Object[] args = invocation.getArguments();
+			Page mockPage = (Page) args[0];
+			String mockTitle = (String) args[1];
+			String mockContent = (String) args[2];
+			mockPage.update(mockTitle, mockContent);
+			return null;
+		})
+			.when(pageService)
+			.update(any(Page.class), any(String.class), any(String.class));
 
 		//when
 		String newHeading = prefix + "newheading";
@@ -212,6 +244,22 @@ class WikiServiceTest {
 		String content = String.format("# %s\n\n%s", heading, paragraph);
 
 		Page page = createPage(title, content);
+		when(pageRepository.findOneByTitleAndLockAndLockId(eq(title), any(LocalDateTime.class), any(Integer.class)))
+			.thenReturn(page);
+		when(pageService.checkLock(title))
+			.thenReturn(false);
+		when(pageService.checkLock(eq(title), any(LocalDateTime.class), any(Integer.class)))
+			.thenReturn(false);
+		doAnswer(invocation -> {
+			Object[] args = invocation.getArguments();
+			Page mockPage = (Page) args[0];
+			String mockTitle = (String) args[1];
+			String mockContent = (String) args[2];
+			mockPage.update(mockTitle, mockContent);
+			return null;
+		})
+			.when(pageService)
+			.update(any(Page.class), any(String.class), any(String.class));
 
 		//when
 		String newTitle = prefix + "newtitle";
@@ -251,6 +299,10 @@ class WikiServiceTest {
 			.build();
 
 		createPage(newTitle, content);
+		when(pageService.checkLock(title))
+			.thenReturn(false);
+		when(pageService.checkLock(eq(title), any(LocalDateTime.class), any(Integer.class)))
+			.thenReturn(false);
 
 		//when
 		PageEdit pageEdit = wikiService.edit(title, request);

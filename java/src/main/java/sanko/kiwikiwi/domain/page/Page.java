@@ -76,4 +76,14 @@ public class Page {
 		this.html = renderer.render(node);
 	}
 
+	public void lock(LocalDateTime lock, Integer lockId) {
+		this.lock = lock;
+		this.lockId = lockId;
+	}
+
+	public void unlock() {
+		lock = null;
+		lockId = null;
+	}
+
 }
