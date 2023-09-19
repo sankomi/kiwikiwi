@@ -12,7 +12,7 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 
 import static org.springframework.test.util.ReflectionTestUtils.setField;
 import static org.mockito.Mockito.*; //when, verify, times, spy
-import static org.junit.jupiter.api.Assertions.*; //assertEquals, assertTrue, assertFalse
+import static org.junit.jupiter.api.Assertions.*; //assertEquals, assertTrue, assertFalse, assertNull, assertNotNull
 
 import sanko.kiwikiwi.domain.page.*; //Page, PageRepository
 
@@ -34,6 +34,65 @@ class PageServiceTest {
 		when(pageRepository.findOneByTitle(title))
 			.thenReturn(page);
 		return page;
+	}
+
+	@Test
+	void testCreatePageNoArgs() {
+		//when
+		Page page = pageService.create();
+
+		//then
+		assertNotNull(page);
+		assertEquals("", page.getTitle());
+		assertEquals("", page.getContent());
+	}
+
+	@Test
+	void testCreatePage() {
+		//given
+		String prefix = "createpage";
+		String title = prefix + "title";
+		String content = prefix + "content";
+
+		//when
+		Page page = pageService.create(title, content);
+
+		//then
+		assertNotNull(page);
+		assertEquals(title, page.getTitle());
+		assertEquals(content, page.getContent());
+	}
+
+	@Test
+	void testFindPageNoPage() {
+		//given
+		String prefix = "findnopage";
+		String title = prefix + "title";
+		when(pageRepository.findOneByTitle(title))
+			.thenReturn(null);
+
+		//when
+		Page page = pageService.find(title);
+
+		//then
+		assertNull(page);
+	}
+
+	@Test
+	void testFindPage() {
+		//given
+		String prefix = "findpage";
+		String title = prefix + "title";
+		String content = prefix + "content";
+		createPage(title, content);
+
+		//when
+		Page page = pageService.find(title);
+
+		//then
+		assertNotNull(page);
+		assertEquals(title, page.getTitle());
+		assertEquals(content, page.getContent());
 	}
 
 	@Test

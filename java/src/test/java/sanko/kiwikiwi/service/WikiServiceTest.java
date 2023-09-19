@@ -17,8 +17,8 @@ import static org.junit.jupiter.api.Assertions.*; //assertEquals, assertTrue, as
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 
-import sanko.kiwikiwi.domain.page.*; //Page, PageRepository
-import sanko.kiwikiwi.domain.history.*; //History, HistoryRepository
+import sanko.kiwikiwi.domain.page.Page;
+import sanko.kiwikiwi.domain.history.History;
 import sanko.kiwikiwi.dto.*; //PageView, PageEditRequest, PageEdit
 
 @ExtendWith(SpringExtension.class)
@@ -34,18 +34,12 @@ class WikiServiceTest {
 	@MockBean
 	private HistoryService historyService;
 
-	@MockBean
-	private PageRepository pageRepository;
-
-	@MockBean
-	private HistoryRepository historyRepository;
-
 	private static Long pageId = 0L;
 
 	private Page createPage(String title, String content) {
 		Page page = new Page(title, content);
 		setField(page, "id", ++pageId);
-		when(pageRepository.findOneByTitle(title))
+		when(pageService.find(title))
 			.thenReturn(page);
 		return page;
 	}
@@ -74,7 +68,7 @@ class WikiServiceTest {
 		String prefix = "notfound";
 		String title = prefix + "title";
 
-		when(pageRepository.findOneByTitle(title))
+		when(pageService.find(title))
 			.thenReturn(null);
 
 		//when
@@ -92,7 +86,7 @@ class WikiServiceTest {
 			//given
 			String title = String.format("invalid%stitle", s);
 
-			when(pageRepository.findOneByTitle(title))
+			when(pageService.find(title))
 				.thenReturn(null);
 
 			//whenthen
@@ -139,8 +133,14 @@ class WikiServiceTest {
 			.summary(null)
 			.build();
 
-		when(pageRepository.findOneByTitle(title))
+		when(pageService.find(title))
 			.thenReturn(null);
+		when(pageService.create())
+			.thenReturn(Page.builder()
+				.title("")
+				.content("")
+				.build()
+			);
 		doAnswer(invocation -> {
 			Page page = (Page) invocation.getArguments()[0];
 			page.update(title, content);
@@ -171,9 +171,15 @@ class WikiServiceTest {
 			.summary(null)
 			.build();
 
-		when(pageRepository.findOneByTitle(title))
+		when(pageService.find(title))
 			.thenReturn(null);
 		createPage(newTitle, content);
+		when(pageService.create(title, content))
+			.thenReturn(Page.builder()
+				.title(title)
+				.content(content)
+				.build()
+			);
 
 		//when
 		PageEdit pageEdit = wikiService.edit(title, request);
@@ -197,8 +203,6 @@ class WikiServiceTest {
 		String content = String.format("# %s\n\n%s", heading, paragraph);
 
 		Page page = createPage(title, content);
-		when(pageRepository.findOneByTitleAndLockAndLockId(eq(title), any(LocalDateTime.class), any(Integer.class)))
-			.thenReturn(page);
 		when(pageService.checkLock(title))
 			.thenReturn(false);
 		when(pageService.checkLock(eq(title), any(LocalDateTime.class), any(Integer.class)))
@@ -244,8 +248,6 @@ class WikiServiceTest {
 		String content = String.format("# %s\n\n%s", heading, paragraph);
 
 		Page page = createPage(title, content);
-		when(pageRepository.findOneByTitleAndLockAndLockId(eq(title), any(LocalDateTime.class), any(Integer.class)))
-			.thenReturn(page);
 		when(pageService.checkLock(title))
 			.thenReturn(false);
 		when(pageService.checkLock(eq(title), any(LocalDateTime.class), any(Integer.class)))
@@ -303,6 +305,12 @@ class WikiServiceTest {
 			.thenReturn(false);
 		when(pageService.checkLock(eq(title), any(LocalDateTime.class), any(Integer.class)))
 			.thenReturn(false);
+		when(pageService.create(title, content))
+			.thenReturn(Page.builder()
+				.title(title)
+				.content(content)
+				.build()
+			);
 
 		//when
 		PageEdit pageEdit = wikiService.edit(title, request);

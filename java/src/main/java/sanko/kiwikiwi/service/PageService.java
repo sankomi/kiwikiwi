@@ -14,6 +14,21 @@ public class PageService {
 
 	private final PageRepository pageRepository;
 
+	public Page create() {
+		return create("", "");
+	}
+
+	public Page create(String title, String content) {
+		return Page.builder()
+			.title(title)
+			.content(content)
+			.build();
+	}
+
+	public Page find(String title) {
+		return pageRepository.findOneByTitle(title);
+	}
+
 	@Transactional
 	public void save(Page page, String title, String content) {
 		page.update(title, content);

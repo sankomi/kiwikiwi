@@ -10,8 +10,8 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 import org.springframework.http.HttpStatus;
 
-import sanko.kiwikiwi.domain.page.*; //Page, PageRepository
-import sanko.kiwikiwi.domain.history.*; //History, HistoryRepository
+import sanko.kiwikiwi.domain.page.Page;
+import sanko.kiwikiwi.domain.history.History;
 import sanko.kiwikiwi.dto.*; //PageView, PageEditRequest, PageEdit
 import sanko.kiwikiwi.Constants;
 
@@ -19,8 +19,6 @@ import sanko.kiwikiwi.Constants;
 @Service
 public class WikiService {
 
-	private final PageRepository pageRepository;
-	private final HistoryRepository historyRepository;
 	private final PageService pageService;
 	private final HistoryService historyService;
 
@@ -29,7 +27,7 @@ public class WikiService {
 	}
 
 	public PageView view(String title) {
-		Page page = pageRepository.findOneByTitle(title);
+		Page page = pageService.find(title);
 
 		if (page == null) {
 			if (match(title, Constants.TITLE_REGEX)) {
@@ -42,16 +40,13 @@ public class WikiService {
 	}
 
 	public PageEdit viewEdit(String title) {
-		Page page = pageRepository.findOneByTitle(title);
+		Page page = pageService.find(title);
 
 		if (page == null) {
 			if (match(title, Constants.TITLE_REGEX)) {
 				throw new ResponseStatusException(HttpStatus.NOT_FOUND);
 			}
-			page = Page.builder()
-				.title(title)
-				.content("")
-				.build();
+			page = pageService.create(title, "");
 			return new PageEdit(page);
 		}
 
@@ -65,10 +60,7 @@ public class WikiService {
 
 		if (match(newTitle, Constants.TITLE_REGEX)) {
 			newTitle = newTitle.replaceAll(Constants.TITLE_REGEX, "");
-			Page page = Page.builder()
-				.title(title)
-				.content(content)
-				.build();
+			Page page = pageService.create(title, content);
 			return new PageEdit(page, newTitle, summary);
 		}
 
@@ -76,10 +68,7 @@ public class WikiService {
 			Page updated = update(title, newTitle, content, summary);
 			return new PageEdit("/wiki/" + updated.getTitle());
 		} catch (TitleDuplicateException | PageLockException e) {
-			Page page = Page.builder()
-				.title(title)
-				.content(content)
-				.build();
+			Page page = pageService.create(title, content);
 			return new PageEdit(page, newTitle, summary);
 		}
 	}
@@ -101,10 +90,10 @@ public class WikiService {
 	}
 
 	private Page update(String title, String newTitle, String content, String summary) throws TitleDuplicateException, PageLockException {
-		Page page = pageRepository.findOneByTitle(title);
+		Page page = pageService.find(title);
 
 		if (!title.equals(newTitle)) {
-			Page newPage = pageRepository.findOneByTitle(newTitle);
+			Page newPage = pageService.find(newTitle);
 
 			if (newPage != null) {
 				throw new TitleDuplicateException("page with new title already exists");
@@ -112,11 +101,7 @@ public class WikiService {
 		}
 
 		if (page == null) {
-			page = Page.builder()
-				.title("")
-				.content("")
-				.build();
-
+			page = pageService.create();
 			historyService.save(page, title, summary, content);
 			pageService.save(page, title, content);
 			return page;
