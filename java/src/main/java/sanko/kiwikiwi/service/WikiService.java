@@ -1,6 +1,6 @@
 package sanko.kiwikiwi.service;
 
-import java.util.Random;
+import java.util.*; //Random, List
 import java.util.regex.*; //Pattern, Matcher
 import java.time.LocalDateTime;
 
@@ -102,8 +102,9 @@ public class WikiService {
 
 		if (page == null) {
 			page = pageService.create();
+			pageService.save(page);
 			historyService.save(page, title, summary, content);
-			pageService.save(page, title, content);
+			pageService.update(page, title, content);
 			return page;
 		} else {
 			if (pageService.checkLock(title)) {
@@ -123,6 +124,23 @@ public class WikiService {
 			pageService.update(page, newTitle, content);
 			return page;
 		}
+	}
+
+	public PageHistoryView history(String title, Integer current) {
+		Page page = pageService.find(title);
+
+		if (page == null) {
+			if (match(title, Constants.TITLE_REGEX)) {
+				throw new ResponseStatusException(HttpStatus.NOT_FOUND);
+			}
+			return new PageHistoryView("/wiki/" + title);
+		}
+
+		int length = page.getHistorys().size();
+		int last = (int) Math.ceil(((float) length) / 10);
+		int to = Math.min(current * 10, length);
+		List<History> historys = page.getHistorys().subList((current - 1) * 10, to);
+		return new PageHistoryView(page, current, last, historys);
 	}
 
 }

@@ -30,8 +30,7 @@ public class PageService {
 	}
 
 	@Transactional
-	public void save(Page page, String title, String content) {
-		page.update(title, content);
+	public void save(Page page) {
 		pageRepository.save(page);
 	}
 

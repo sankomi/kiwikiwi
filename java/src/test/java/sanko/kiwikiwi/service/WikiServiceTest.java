@@ -147,7 +147,7 @@ class WikiServiceTest {
 			return null;
 		})
 			.when(pageService)
-			.save(any(Page.class), eq(title), eq(content));
+			.update(any(Page.class), eq(title), eq(content));
 
 		//when
 		PageEdit pageEdit = wikiService.edit(title, request);

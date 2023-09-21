@@ -104,13 +104,11 @@ class PageServiceTest {
 		Page page = new Page(title, content);
 
 		//when
-		String newTitle = prefix + "newtitle";
-		String newContent = prefix + "newcontent";
-		pageService.save(page, newTitle, newContent);
+		pageService.save(page);
 
 		//then
-		assertEquals(newTitle, page.getTitle());
-		assertEquals(newContent, page.getContent());
+		assertEquals(title, page.getTitle());
+		assertEquals(content, page.getContent());
 		verify(pageRepository, times(1)).save(page);
 	}
 
