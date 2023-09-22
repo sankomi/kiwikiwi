@@ -1,6 +1,6 @@
 package sanko.kiwikiwi.service;
 
-import java.util.*; //List, Arrays
+import java.util.*; //List, Arrays, ArrayList
 import java.time.LocalDateTime;
 
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -19,7 +19,7 @@ import static org.mockito.ArgumentMatchers.eq;
 
 import sanko.kiwikiwi.domain.page.Page;
 import sanko.kiwikiwi.domain.history.History;
-import sanko.kiwikiwi.dto.*; //PageView, PageEditRequest, PageEdit
+import sanko.kiwikiwi.dto.*; //PageView, PageEditRequest, PageEdit, PageHistoryView
 
 @ExtendWith(SpringExtension.class)
 @Import(WikiService.class)
@@ -42,6 +42,22 @@ class WikiServiceTest {
 		when(pageService.find(title))
 			.thenReturn(page);
 		return page;
+	}
+
+	private List<History> createHistorys(Page page, int number) {
+		List<History> historys = new ArrayList();
+		for (int i = 0; i < number; i++) {
+			History history = History.builder()
+				.page(page)
+				.event(i)
+				.summary("summary" + String.valueOf(i))
+				.title("title" + String.valueOf(i))
+				.content("content" + String.valueOf(i))
+				.build();
+			historys.add(history);
+		}
+		setField(page, "historys", historys);
+		return historys;
 	}
 
 	@Test
@@ -322,6 +338,66 @@ class WikiServiceTest {
 		assertTrue(pageEdit.getHtml().contains(heading));
 		assertTrue(pageEdit.getHtml().contains(paragraph));
 		assertEquals(null, pageEdit.getRedirect());
+	}
+
+	@Test
+	void testWikiPageHistoryNoPage() {
+		//given
+		String prefix = "historynopage";
+		String title = prefix + "title";
+		Integer current = 5;
+		when(pageService.find(title))
+			.thenReturn(null);
+
+		//when
+		PageHistoryView history = wikiService.history(title, current);
+
+		//then
+		assertEquals("/wiki/" + title, history.getRedirect());
+	}
+
+	@Test
+	void testWikiPageHistory() {
+		//given
+		String prefix = "history";
+		String title = prefix + "title";
+		String content = prefix + "content";
+		int current = 2;
+		int last = 3;
+		int number = 25;
+		Page page = createPage(title, content);
+		createHistorys(page, number);
+
+		//when
+		PageHistoryView history = wikiService.history(title, current);
+
+		//then
+		assertEquals(title, history.getTitle());
+		assertEquals(current, history.getCurrent());
+		assertEquals(last, history.getLast());
+		assertEquals(10, history.getHistorys().size());
+	}
+
+	@Test
+	void testWikiPageHistoryLastPage() {
+		//given
+		String prefix = "historylastpage";
+		String title = prefix + "title";
+		String content = prefix + "content";
+		int current = 4;
+		int last = 4;
+		int number = 33;
+		Page page = createPage(title, content);
+		createHistorys(page, number);
+
+		//when
+		PageHistoryView history = wikiService.history(title, current);
+
+		//then
+		assertEquals(title, history.getTitle());
+		assertEquals(current, history.getCurrent());
+		assertEquals(last, history.getLast());
+		assertEquals(3, history.getHistorys().size());
 	}
 
 }
