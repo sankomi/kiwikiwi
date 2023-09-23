@@ -12,7 +12,7 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.web.server.ResponseStatusException;
 
 import static org.springframework.test.util.ReflectionTestUtils.setField;
-import static org.mockito.Mockito.*; //when, doAnswer
+import static org.mockito.Mockito.*; //when, doAnswer, verify
 import static org.junit.jupiter.api.Assertions.*; //assertEquals, assertTrue, assertThrows
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -143,10 +143,11 @@ class WikiServiceTest {
 		String heading = prefix + "heading";
 		String paragraph = prefix + "paragraph";
 		String content = String.format("# %s\n\n%s", heading, paragraph);
+		String summary = prefix + "summary";
 		PageEditRequest request = PageEditRequest.builder()
 			.title(newTitle)
 			.content(content)
-			.summary(null)
+			.summary(summary)
 			.build();
 
 		when(pageService.find(title))
@@ -173,6 +174,45 @@ class WikiServiceTest {
 	}
 
 	@Test
+	void testWikiPageEditNoPageNoSummary() {
+		//given
+		String prefix = "editnopagenosummary";
+		String title = prefix + "title";
+		String newTitle = title;
+		String heading = prefix + "heading";
+		String paragraph = prefix + "paragraph";
+		String content = String.format("# %s\n\n%s", heading, paragraph);
+		PageEditRequest request = PageEditRequest.builder()
+			.title(newTitle)
+			.content(content)
+			.summary("")
+			.build();
+
+		when(pageService.find(title))
+			.thenReturn(null);
+		when(pageService.create())
+			.thenReturn(Page.builder()
+				.title("")
+				.content("")
+				.build()
+			);
+		doAnswer(invocation -> {
+			Page page = (Page) invocation.getArguments()[0];
+			page.update(title, content);
+			return null;
+		})
+			.when(pageService)
+			.update(any(Page.class), eq(title), eq(content));
+
+		//when
+		PageEdit pageEdit = wikiService.edit(title, request);
+
+		//then
+		assertEquals("/wiki/" + title, pageEdit.getRedirect());
+		verify(historyService).save(any(Page.class), eq(title), eq("create"), eq(content));
+	}
+
+	@Test
 	void testWikiPageEditNoPageButTitleExists() {
 		//given
 		String prefix = "editnopagebuttitleexists";
@@ -181,10 +221,11 @@ class WikiServiceTest {
 		String heading = prefix + "heading";
 		String paragraph = prefix + "paragraph";
 		String content = String.format("# %s\n\n%s", heading, paragraph);
+		String summary = prefix + "summary";
 		PageEditRequest request = PageEditRequest.builder()
 			.title(newTitle)
 			.content(content)
-			.summary(null)
+			.summary(summary)
 			.build();
 
 		when(pageService.find(title))
@@ -238,10 +279,11 @@ class WikiServiceTest {
 		String newHeading = prefix + "newheading";
 		String newParagraph = prefix + "newparagraph";
 		String newContent = String.format("# %s\n\n%s", newHeading, newParagraph);
+		String newSummary = prefix + "newsummary";
 		PageEditRequest request = PageEditRequest.builder()
 			.title(title)
 			.content(newContent)
-			.summary(null)
+			.summary(newSummary)
 			.build();
 
 		PageEdit pageEdit = wikiService.edit(title, request);
@@ -252,6 +294,52 @@ class WikiServiceTest {
 		assertTrue(page.getHtml().contains(newHeading));
 		assertTrue(page.getHtml().contains(newParagraph));
 		assertEquals("/wiki/" + title, pageEdit.getRedirect());
+	}
+
+	@Test
+	void testWikiPageEditPageSameTitleNoSummary() {
+		//given
+		String prefix = "editpagesametitlenosummary";
+		String title = prefix + "title";
+		String heading = prefix + "heading";
+		String paragraph = prefix + "paragraph";
+		String content = String.format("# %s\n\n%s", heading, paragraph);
+
+		Page page = createPage(title, content);
+		when(pageService.checkLock(title))
+			.thenReturn(false);
+		when(pageService.checkLock(eq(title), any(LocalDateTime.class), any(Integer.class)))
+			.thenReturn(false);
+		doAnswer(invocation -> {
+			Object[] args = invocation.getArguments();
+			Page mockPage = (Page) args[0];
+			String mockTitle = (String) args[1];
+			String mockContent = (String) args[2];
+			mockPage.update(mockTitle, mockContent);
+			return null;
+		})
+			.when(pageService)
+			.update(any(Page.class), any(String.class), any(String.class));
+
+		//when
+		String newHeading = prefix + "newheading";
+		String newParagraph = prefix + "newparagraph";
+		String newContent = String.format("# %s\n\n%s", newHeading, newParagraph);
+		PageEditRequest request = PageEditRequest.builder()
+			.title(title)
+			.content(newContent)
+			.summary("")
+			.build();
+
+		PageEdit pageEdit = wikiService.edit(title, request);
+
+		//then
+		assertEquals(title, page.getTitle());
+		assertEquals(newContent, page.getContent());
+		assertTrue(page.getHtml().contains(newHeading));
+		assertTrue(page.getHtml().contains(newParagraph));
+		assertEquals("/wiki/" + title, pageEdit.getRedirect());
+		verify(historyService).save(any(Page.class), eq(title), eq("edit"), eq(newContent));
 	}
 
 	@Test
@@ -284,10 +372,11 @@ class WikiServiceTest {
 		String newHeading = prefix + "newheading";
 		String newParagraph = prefix + "newparagraph";
 		String newContent = String.format("# %s\n\n%s", newHeading, newParagraph);
+		String newSummary = prefix + "newsummary";
 		PageEditRequest request = PageEditRequest.builder()
 			.title(newTitle)
 			.content(newContent)
-			.summary(null)
+			.summary(newSummary)
 			.build();
 
 		PageEdit pageEdit = wikiService.edit(title, request);
@@ -309,11 +398,12 @@ class WikiServiceTest {
 		String heading = prefix + "heading";
 		String paragraph = prefix + "paragraph";
 		String content = String.format("# %s\n\n%s", heading, paragraph);
+		String summary = prefix + "summary";
 		Page page = createPage(title, content);
 		PageEditRequest request = PageEditRequest.builder()
 			.title(newTitle)
 			.content(content)
-			.summary(null)
+			.summary(summary)
 			.build();
 
 		createPage(newTitle, content);

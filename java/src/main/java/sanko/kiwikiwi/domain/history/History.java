@@ -49,6 +49,7 @@ public class History {
 		this.summary = summary;
 		this.title = getPatch(page.getTitle(), title);
 		this.content = getPatch(page.getContent(), content);
+		this.write = LocalDateTime.now();
 	}
 
 	private String getPatch(String text1, String text2) {

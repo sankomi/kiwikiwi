@@ -103,6 +103,9 @@ public class WikiService {
 		if (page == null) {
 			page = pageService.create();
 			pageService.save(page);
+			if (summary.isEmpty()) {
+				summary = "create";
+			}
 			historyService.save(page, title, summary, content);
 			pageService.update(page, title, content);
 			return page;
@@ -120,6 +123,9 @@ public class WikiService {
 				throw new PageLockException("page is locked");
 			}
 
+			if (summary.isEmpty()) {
+				summary = "edit";
+			}
 			historyService.save(page, title, summary, content);
 			pageService.update(page, newTitle, content);
 			return page;
