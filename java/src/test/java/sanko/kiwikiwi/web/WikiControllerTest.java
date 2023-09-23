@@ -1,5 +1,7 @@
 package sanko.kiwikiwi.web;
 
+import java.util.*; //List, ArrayList
+
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.web.servlet.MockMvc;
@@ -13,11 +15,13 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*; //status. view, model
 import static org.hamcrest.Matchers.hasProperty;
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.containsString;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 
 import sanko.kiwikiwi.domain.page.Page;
+import sanko.kiwikiwi.domain.history.History;
 import sanko.kiwikiwi.dto.*; //PageView, PageEdit
 import sanko.kiwikiwi.service.WikiService;
 
@@ -40,6 +44,22 @@ class WikiControllerTest {
 		when(wikiService.viewEdit(title))
 			.thenReturn(new PageEdit(page));
 		return page;
+	}
+
+	private List<History> createHistorys(Page page, int number) {
+		List<History> historys = new ArrayList();
+		for (int i = 0; i < number; i++) {
+			History history = History.builder()
+				.page(page)
+				.event(i)
+				.summary("summary" + String.valueOf(i))
+				.title("title" + String.valueOf(i))
+				.content("content" + String.valueOf(i))
+				.build();
+			historys.add(history);
+		}
+		setField(page, "historys", historys);
+		return historys;
 	}
 
 	@Test
@@ -123,6 +143,70 @@ class WikiControllerTest {
 			.andExpect(view().name("edit"))
 			.andExpect(model().attribute("page", hasProperty("title", equalTo(title))))
 			.andExpect(model().attribute("page", hasProperty("html", containsString(content))));
+	}
+
+	@Test
+	void testWikiHistoryView() throws Exception {
+		//given
+		String prefix = "historyview";
+		String title = prefix + "title";
+		String content = prefix + "content";
+		Page page = createPage(title, content);
+		int number = 13;
+		int last = 2;
+		List<History> historys = createHistorys(page, number);
+
+		when(wikiService.history(title, 1))
+			.thenReturn(new PageHistoryView(page, 1, last, historys.subList(0, 10)));
+
+		//whenthen
+		mockMvc.perform(get("/history/" + title))
+			.andExpect(status().isOk())
+			.andExpect(view().name("history"))
+			.andExpect(model().attribute("page", hasProperty("title", equalTo(title))))
+			.andExpect(model().attribute("page", hasProperty("current", equalTo(1))))
+			.andExpect(model().attribute("page", hasProperty("last", equalTo(last))))
+			.andExpect(model().attribute("page", hasProperty("historys", hasSize(10))));
+	}
+
+	@Test
+	void testWikiHistoryViewPageTwo() throws Exception {
+		//given
+		String prefix = "historyviewpagetwo";
+		String title = prefix + "title";
+		String content = prefix + "content";
+		Page page = createPage(title, content);
+		int number = 13;
+		int current = 2;
+		int last = 2;
+		List<History> historys = createHistorys(page, number);
+
+		when(wikiService.history(title, current))
+			.thenReturn(new PageHistoryView(page, current, last, historys.subList(10, 13)));
+
+		//whenthen
+		mockMvc.perform(get("/history/" + title + "/" + String.valueOf(current)))
+			.andExpect(status().isOk())
+			.andExpect(view().name("history"))
+			.andExpect(model().attribute("page", hasProperty("title", equalTo(title))))
+			.andExpect(model().attribute("page", hasProperty("current", equalTo(current))))
+			.andExpect(model().attribute("page", hasProperty("last", equalTo(last))))
+			.andExpect(model().attribute("page", hasProperty("historys", hasSize(3))));
+	}
+
+	@Test
+	void testWikiHistoryViewNoPage() throws Exception {
+		//given
+		String prefix = "historyviewnopage";
+		String title = prefix + "title";
+
+		when(wikiService.history(title, 1))
+			.thenReturn(new PageHistoryView("/wiki/" + title));
+
+		//whenthen
+		mockMvc.perform(get("/history/" + title))
+			.andExpect(status().isMovedTemporarily())
+			.andExpect(view().name("redirect:/wiki/" + title));
 	}
 
 }
