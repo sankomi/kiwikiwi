@@ -8,10 +8,10 @@
 	</parent>
 
 	<groupId>sanko</groupId>
-	<artifactId>kiwikiwi</artifactId>
+	<artifactId>kiwi</artifactId>
 	<version>0.0.1</version>
-	<name>kiwikiwi</name>
-	<description>kiwikiwi is wikiwiki</description>
+	<name>kiwi</name>
+	<description>kiwi is wiki</description>
 
 	<properties>
 		<java.version>17</java.version>
