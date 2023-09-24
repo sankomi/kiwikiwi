@@ -18,7 +18,7 @@ public class HistoryService {
 	@Transactional
 	public void save(Page page, String title, String summary, String content) {
 		History last = historyRepository.findFirstByPageOrderByEventDesc(page);
-		Integer event = 0;
+		Integer event = 1;
 		if (last != null) {
 			event = last.getEvent() + 1;
 		}
@@ -30,6 +30,11 @@ public class HistoryService {
 			.summary(summary)
 			.content(content)
 			.build());
+	}
+
+	@Transactional
+	public History find(Page page, Integer event) {
+		return historyRepository.findOneByPageAndEvent(page, event);
 	}
 
 }

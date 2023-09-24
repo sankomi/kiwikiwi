@@ -1,6 +1,6 @@
 package sanko.kiwi.service;
 
-import java.util.*; //Random, List
+import java.util.*; //Random, List, Collections, LinkedList
 import java.util.regex.*; //Pattern, Matcher
 import java.time.LocalDateTime;
 
@@ -9,10 +9,12 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 import org.springframework.http.HttpStatus;
+import org.bitbucket.cowwoc.diffmatchpatch.DiffMatchPatch;
+import org.bitbucket.cowwoc.diffmatchpatch.DiffMatchPatch.*; //Diff, Patch
 
 import sanko.kiwi.domain.page.Page;
 import sanko.kiwi.domain.history.History;
-import sanko.kiwi.dto.*; //PageView, PageEditRequest, PageEdit
+import sanko.kiwi.dto.*; //PageView, PageEditRequest, PageEdit, PageBack
 import sanko.kiwi.Constants;
 
 @RequiredArgsConstructor
@@ -147,6 +149,55 @@ public class WikiService {
 		int to = Math.min(current * 10, length);
 		List<History> historys = page.getHistorys().subList((current - 1) * 10, to);
 		return new PageHistoryView(page, current, last, historys);
+	}
+
+	public PageBack back(String title, Integer event) {
+		Page back = make(title, event);
+
+		if (back == null) {
+			if (match(title, Constants.TITLE_REGEX)) {
+				throw new ResponseStatusException(HttpStatus.NOT_FOUND);
+			}
+			return new PageBack("/history/" + title);
+		}
+
+		return new PageBack(back, event);
+	}
+
+	private Page make(String title, Integer event) {
+		Page page = pageService.find(title);
+
+		if (page == null) {
+			return null;
+		}
+
+		History hist = historyService.find(page, event);
+
+		if (hist == null) {
+			return null;
+		}
+
+		String backTitle = "";
+		String backContent = "";
+
+		List<History> historys = page.getHistorys();
+		Collections.reverse(historys);
+		for (History history : historys) {
+			if (history.getEvent() > event) {
+				break;
+			}
+			backTitle = applyPatch(backTitle, history.getTitle());
+			backContent = applyPatch(backContent, history.getContent());
+		}
+
+		return pageService.create(backTitle, backContent);
+	}
+
+	private String applyPatch(String text, String patchText) {
+		DiffMatchPatch dmp = new DiffMatchPatch();
+		List<Patch> patch = dmp.patchFromText(patchText);
+		Object[] patched = dmp.patchApply(new LinkedList<>(patch), text);
+		return (String) patched[0];
 	}
 
 }

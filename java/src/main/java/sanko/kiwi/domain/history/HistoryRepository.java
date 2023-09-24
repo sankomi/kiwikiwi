@@ -7,5 +7,6 @@ import sanko.kiwi.domain.page.Page;
 public interface HistoryRepository extends JpaRepository<History, Long> {
 
 	History findFirstByPageOrderByEventDesc(Page page);
+	History findOneByPageAndEvent(Page page, Integer event);
 
 }

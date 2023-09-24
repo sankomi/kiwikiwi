@@ -78,7 +78,7 @@ class HistoryServiceTest {
 		//then
 		ArgumentCaptor<History> argument = ArgumentCaptor.forClass(History.class);
 		verify(historyRepository, times(1)).save(argument.capture());
-		assertEquals(0, argument.getValue().getEvent());
+		assertEquals(1, argument.getValue().getEvent());
 		assertEquals(newSummary, argument.getValue().getSummary());
 	}
 

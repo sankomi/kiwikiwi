@@ -6,7 +6,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.ui.Model;
 
 import sanko.kiwi.service.WikiService;
-import sanko.kiwi.dto.*; //PageView, PageEditRequest, PageEdit, PageHistoryView
+import sanko.kiwi.dto.*; //PageView, PageEditRequest, PageEdit, PageHistoryView, PageBack
 
 @RequiredArgsConstructor
 @Controller
@@ -63,6 +63,19 @@ public class WikiController {
 
 		model.addAttribute("page", pageHistoryView);
 		return "history";
+	}
+
+	@GetMapping("/back/{title}/{event}")
+	public String back(@PathVariable("title") String title, @PathVariable("event") Integer event, Model model) {
+		PageBack pageBack = wikiService.back(title, event);
+
+		String redirect = pageBack.getRedirect();
+		if (redirect != null) {
+			return "redirect:" + redirect;
+		}
+
+		model.addAttribute("page", pageBack);
+		return "back";
 	}
 
 }
