@@ -6,7 +6,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.ui.Model;
 
 import sanko.kiwi.service.WikiService;
-import sanko.kiwi.dto.*; //PageView, PageEditRequest, PageEdit, PageHistoryView, PageBack
+import sanko.kiwi.dto.*; //PageView, PageEditRequest, PageEdit, PageHistoryView, PageBack, PageRehash
 
 @RequiredArgsConstructor
 @Controller
@@ -75,6 +75,19 @@ public class WikiController {
 		}
 
 		model.addAttribute("page", pageBack);
+		return "back";
+	}
+
+	@GetMapping("/rehash/{title}/{event}")
+	public String rehash(@PathVariable("title") String title, @PathVariable("event") Integer event, Model model) {
+		PageRehash pageRehash = wikiService.rehash(title, event);
+
+		String redirect = pageRehash.getRedirect();
+		if (redirect != null) {
+			return "redirect:" + redirect;
+		}
+
+		model.addAttribute("page", pageRehash);
 		return "back";
 	}
 

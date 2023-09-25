@@ -12,14 +12,14 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.web.server.ResponseStatusException;
 
 import static org.springframework.test.util.ReflectionTestUtils.setField;
-import static org.mockito.Mockito.*; //when, doAnswer, verify
+import static org.mockito.Mockito.*; //when, doAnswer, verify,
 import static org.junit.jupiter.api.Assertions.*; //assertEquals, assertTrue, assertThrows
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 
 import sanko.kiwi.domain.page.Page;
 import sanko.kiwi.domain.history.History;
-import sanko.kiwi.dto.*; //PageView, PageEditRequest, PageEdit, PageHistoryView
+import sanko.kiwi.dto.*; //PageView, PageEditRequest, PageEdit, PageHistoryView, PageBack, PageRehash
 
 @ExtendWith(SpringExtension.class)
 @Import(WikiService.class)
@@ -55,6 +55,8 @@ class WikiServiceTest {
 				.content("content" + String.valueOf(i))
 				.build();
 			historys.add(history);
+			when(historyService.find(any(Page.class), eq(i)))
+				.thenReturn(history);
 		}
 		setField(page, "historys", historys);
 		return historys;
@@ -488,6 +490,49 @@ class WikiServiceTest {
 		assertEquals(current, history.getCurrent());
 		assertEquals(last, history.getLast());
 		assertEquals(3, history.getHistorys().size());
+	}
+
+	@Test
+	void testWikiPageBack() {
+		//given
+		String prefix = "back";
+		String title = prefix + "title";
+		String content = prefix + "content";
+		int number = 5;
+		int event = 3;
+		Page page = createPage(title, content);
+		createHistorys(page, number);
+
+		//when
+		when(pageService.create(any(String.class), any(String.class)))
+			.thenAnswer(invocation -> {
+				String backTitle = (String) invocation.getArguments()[0];
+				String backContent = (String) invocation.getArguments()[1];
+				return Page.builder()
+					.title(backTitle)
+					.content(backContent)
+					.build();
+			});
+		PageBack back = wikiService.back(title, event);
+
+		//then
+		assertEquals(event, back.getEvent());
+	}
+
+	@Test
+	void testWikiPageBackNoPage() {
+		//given
+		String prefix = "backnopage";
+		String title = prefix + "title";
+		Integer event = 3;
+		when(pageService.find(title))
+			.thenReturn(null);
+
+		//when
+		PageBack back = wikiService.back(title, event);
+
+		//then
+		assertEquals("/history/" + title, back.getRedirect());
 	}
 
 }

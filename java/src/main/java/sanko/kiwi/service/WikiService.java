@@ -14,7 +14,7 @@ import org.bitbucket.cowwoc.diffmatchpatch.DiffMatchPatch.*; //Diff, Patch
 
 import sanko.kiwi.domain.page.Page;
 import sanko.kiwi.domain.history.History;
-import sanko.kiwi.dto.*; //PageView, PageEditRequest, PageEdit, PageBack
+import sanko.kiwi.dto.*; //PageView, PageEditRequest, PageEdit, PageBack, PageRehash
 import sanko.kiwi.Constants;
 
 @RequiredArgsConstructor
@@ -162,6 +162,24 @@ public class WikiService {
 		}
 
 		return new PageBack(back, event);
+	}
+
+	public PageRehash rehash(String title, Integer event) {
+		Page back = make(title, event);
+
+		if (back == null) {
+			if (match(title, Constants.TITLE_REGEX)) {
+				throw new ResponseStatusException(HttpStatus.NOT_FOUND);
+			}
+			return new PageRehash("/wiki/" + title);
+		}
+
+		try {
+			Page updated = update(title, back.getTitle(), back.getContent(), "rehash(" + String.valueOf(event) + ")");
+			return new PageRehash("/wiki/" + back.getTitle());
+		} catch (TitleDuplicateException | PageLockException e) {
+			return new PageRehash("/back/" + title + "/" + String.valueOf(event));
+		}
 	}
 
 	private Page make(String title, Integer event) {
