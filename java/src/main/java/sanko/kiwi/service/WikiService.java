@@ -3,6 +3,8 @@ package sanko.kiwi.service;
 import java.util.*; //Random, List, Collections, LinkedList
 import java.util.regex.*; //Pattern, Matcher
 import java.time.LocalDateTime;
+import java.net.URLDecoder;
+import java.io.UnsupportedEncodingException;
 
 import org.springframework.stereotype.Service;
 import lombok.RequiredArgsConstructor;
@@ -14,7 +16,7 @@ import org.bitbucket.cowwoc.diffmatchpatch.DiffMatchPatch.*; //Diff, Patch
 
 import sanko.kiwi.domain.page.Page;
 import sanko.kiwi.domain.history.History;
-import sanko.kiwi.dto.*; //PageView, PageEditRequest, PageEdit, PageBack, PageRehash
+import sanko.kiwi.dto.*; //PageView, PageEditRequest, PageEdit, PageBack, PageRehash, PageDiff
 import sanko.kiwi.Constants;
 
 @RequiredArgsConstructor
@@ -216,6 +218,48 @@ public class WikiService {
 		List<Patch> patch = dmp.patchFromText(patchText);
 		Object[] patched = dmp.patchApply(new LinkedList<>(patch), text);
 		return (String) patched[0];
+	}
+
+	public PageDiff diff(String title, Integer event) {
+		Page page = pageService.find(title);
+
+		if (page == null) {
+			if (match(title, Constants.TITLE_REGEX)) {
+				throw new ResponseStatusException(HttpStatus.NOT_FOUND);
+			}
+			return new PageDiff("/wiki/" + title);
+		}
+
+		History history = historyService.find(page, event);
+
+		if (history == null) {
+			return new PageDiff("/history/" + title);
+		}
+
+		String titleDiff = history.getTitle();
+		titleDiff = titleDiff.replaceAll("\\n\\+([^\\n]*)", "\n##ins##\\%2b$1##/ins##");
+		titleDiff = titleDiff.replaceAll("\\n\\-([^\\n]*)", "\n##del##\\-$1##/del##");
+		titleDiff = titleDiff.replaceAll("@@\\s\\-\\d+,{0,1}\\d*\\s\\+\\d+,{0,1}\\d*\\s@@\\n{0,1}", "");
+		try {
+			titleDiff = URLDecoder.decode(titleDiff, "UTF-8");
+		} catch (UnsupportedEncodingException e) {
+			e.printStackTrace();
+		}
+		titleDiff = titleDiff.replaceAll("##(ins|/ins|del|/del)##", "<$1>");
+
+		String contentDiff = history.getContent();
+		contentDiff = contentDiff.replaceAll("\\n\\+([^\\n]*)", "\n##ins##%2b$1##/ins##");
+		contentDiff = contentDiff.replaceAll("\\n\\-([^\\n]*)", "\n##del##-$1##/del##");
+		contentDiff = contentDiff.replaceAll("@@\\s\\-\\d+,{0,1}\\d*\\s\\+\\d+,{0,1}\\d*\\s@@\\n{0,1}", "");
+		contentDiff = contentDiff.replaceAll("(%0D)*%0A", "%0A ");
+		try {
+			contentDiff = URLDecoder.decode(contentDiff, "UTF-8");
+		} catch (UnsupportedEncodingException e) {
+			e.printStackTrace();
+		}
+		contentDiff = contentDiff.replaceAll("##(ins|/ins|del|/del)##", "<$1>");
+
+		return new PageDiff(title, history, titleDiff, contentDiff);
 	}
 
 }

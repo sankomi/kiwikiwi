@@ -6,7 +6,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.ui.Model;
 
 import sanko.kiwi.service.WikiService;
-import sanko.kiwi.dto.*; //PageView, PageEditRequest, PageEdit, PageHistoryView, PageBack, PageRehash
+import sanko.kiwi.dto.*; //PageView, PageEditRequest, PageEdit, PageHistoryView, PageBack, PageRehash, PageDiff
 
 @RequiredArgsConstructor
 @Controller
@@ -89,6 +89,19 @@ public class WikiController {
 
 		model.addAttribute("page", pageRehash);
 		return "back";
+	}
+
+	@GetMapping("/diff/{title}/{event}")
+	public String diff(@PathVariable("title") String title, @PathVariable("event") Integer event, Model model) {
+		PageDiff pageDiff = wikiService.diff(title, event);
+
+		String redirect = pageDiff.getRedirect();
+		if (redirect != null) {
+			return "redirect:" + redirect;
+		}
+
+		model.addAttribute("page", pageDiff);
+		return "diff";
 	}
 
 }

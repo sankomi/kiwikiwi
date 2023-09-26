@@ -19,7 +19,7 @@ import static org.mockito.ArgumentMatchers.eq;
 
 import sanko.kiwi.domain.page.Page;
 import sanko.kiwi.domain.history.History;
-import sanko.kiwi.dto.*; //PageView, PageEditRequest, PageEdit, PageHistoryView, PageBack, PageRehash
+import sanko.kiwi.dto.*; //PageView, PageEditRequest, PageEdit, PageHistoryView, PageBack, PageRehash, PageDiff
 
 @ExtendWith(SpringExtension.class)
 @Import(WikiService.class)
@@ -533,6 +533,43 @@ class WikiServiceTest {
 
 		//then
 		assertEquals("/history/" + title, back.getRedirect());
+	}
+
+	@Test
+	void testWikiPageDiff() {
+		//given
+		String title = "difftitle";
+		String content = "diffcontent";
+		Page page = createPage(title, content);
+
+		String newTitle = "12345";
+		String newContent = "67890";
+		Integer event = 2;
+		History history = History.builder()
+		   .page(page)
+		   .event(event)
+		   .summary("create")
+		   .title(newTitle)
+		   .content(newContent)
+		   .build();
+		when(historyService.find(any(Page.class), eq(event)))
+			.thenAnswer(invocation -> {
+				Page p = (Page) invocation.getArguments()[0];
+				if (p.getId().equals(page.getId())) {
+					return history;
+				}
+				return null;
+			});
+
+		//when
+		PageDiff diff = wikiService.diff(title, event);
+
+		//then
+		assertEquals(event, diff.getEvent());
+		assertTrue(diff.getTitleDiff().contains("+" + newTitle));
+		assertTrue(diff.getTitleDiff().contains("-" + title));
+		assertTrue(diff.getContentDiff().contains("+" + newContent));
+		assertTrue(diff.getContentDiff().contains("-" + content));
 	}
 
 }
