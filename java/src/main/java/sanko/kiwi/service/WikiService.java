@@ -30,6 +30,11 @@ public class WikiService {
 		return Pattern.compile(regex).matcher(string).find();
 	}
 
+	public String getRandomPage() {
+		Page page = pageService.getRandomPage();
+		return page.getTitle();
+	}
+
 	public PageView view(String title) {
 		Page page = pageService.find(title);
 

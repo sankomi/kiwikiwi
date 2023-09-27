@@ -14,6 +14,12 @@ public class WikiController {
 
 	private final WikiService wikiService;
 
+	@GetMapping("/wiki")
+	public String view() {
+		String title = wikiService.getRandomPage();
+		return "redirect:/wiki/" + title;
+	}
+
 	@GetMapping("/wiki/{title}")
 	public String view(@PathVariable("title") String title, Model model) {
 		PageView pageView = wikiService.view(title);

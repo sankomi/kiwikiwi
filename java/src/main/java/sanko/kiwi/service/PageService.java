@@ -1,6 +1,7 @@
 package sanko.kiwi.service;
 
 import java.time.LocalDateTime;
+import java.util.*; //List, Random
 
 import org.springframework.stereotype.Service;
 import lombok.RequiredArgsConstructor;
@@ -23,6 +24,14 @@ public class PageService {
 			.title(title)
 			.content(content)
 			.build();
+	}
+
+	public Page getRandomPage() {
+		List<Page> pages = pageRepository.findAll();
+		int length = pages.size();
+		Random random = new Random();
+		int index = random.nextInt(length);
+		return pages.get(index);
 	}
 
 	public Page find(String title) {
