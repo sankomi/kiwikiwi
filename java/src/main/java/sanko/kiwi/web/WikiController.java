@@ -1,7 +1,7 @@
 package sanko.kiwi.web;
 
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.*; //GetMapping, PathVariable
+import org.springframework.web.bind.annotation.*; //GetMapping, PathVariable, RequestParam
 import lombok.RequiredArgsConstructor;
 import org.springframework.ui.Model;
 
@@ -13,6 +13,17 @@ import sanko.kiwi.dto.*; //PageView, PageEditRequest, PageEdit, PageHistoryView,
 public class WikiController {
 
 	private final WikiService wikiService;
+
+	@GetMapping("/search")
+	public String search(@RequestParam("s") String string, @RequestParam(value = "p", required = false) Integer page, Model model) {
+		if (page == null) {
+			page = 1;
+		}
+
+		PageSearch pageSearch = wikiService.search(string, page);
+		model.addAttribute("page", pageSearch);
+		return "search";
+	}
 
 	@GetMapping("/wiki")
 	public String view() {

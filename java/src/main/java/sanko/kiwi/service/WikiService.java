@@ -16,7 +16,7 @@ import org.bitbucket.cowwoc.diffmatchpatch.DiffMatchPatch.*; //Diff, Patch
 
 import sanko.kiwi.domain.page.Page;
 import sanko.kiwi.domain.history.History;
-import sanko.kiwi.dto.*; //PageView, PageEditRequest, PageEdit, PageBack, PageRehash, PageDiff
+import sanko.kiwi.dto.*; //PageView, PageEditRequest, PageEdit, PageBack, PageRehash, PageDiff, PageSearch
 import sanko.kiwi.Constants;
 
 @RequiredArgsConstructor
@@ -28,6 +28,17 @@ public class WikiService {
 
 	private boolean match(String string, String regex) {
 		return Pattern.compile(regex).matcher(string).find();
+	}
+
+	public PageSearch search(String search, Integer page) {
+		List<Page> pages = pageService.search(search, page);
+
+		int length = pages.size();
+		int last = (int) Math.ceil(((float) length) / 10);
+		int to = Math.min(page * 10, length);
+		List<Page> show = pages.subList((page - 1) * 10, to);
+
+		return new PageSearch(search, page, last, pages);
 	}
 
 	public String getRandomPage() {

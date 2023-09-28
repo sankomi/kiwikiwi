@@ -26,6 +26,10 @@ public class PageService {
 			.build();
 	}
 
+	public List<Page> search(String title, Integer page) {
+		return pageRepository.findByTitleContainingOrContentContaining(title, title);
+	}
+
 	public Page getRandomPage() {
 		List<Page> pages = pageRepository.findAll();
 		int length = pages.size();

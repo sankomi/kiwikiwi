@@ -1,0 +1,29 @@
+package sanko.kiwi.dto;
+
+import java.util.List;
+import java.util.stream.Collectors;
+
+import lombok.Getter;
+
+import sanko.kiwi.domain.page.Page;
+
+@Getter
+public class PageSearch {
+
+	private String search;
+
+	private int current;
+	private int last;
+
+	private List<String> pages;
+
+	public PageSearch(String search, int current, int last, List<Page> pages) {
+		this.search = search;
+		this.current = current;
+		this.last = last;
+		this.pages = pages.stream()
+			.map(Page::getTitle)
+			.collect(Collectors.toList());
+	}
+
+}
