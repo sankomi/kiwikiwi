@@ -30,15 +30,19 @@ public class WikiService {
 		return Pattern.compile(regex).matcher(string).find();
 	}
 
-	public PageSearch search(String search, Integer page) {
-		List<Page> pages = pageService.search(search, page);
+	public PageSearch search(String string, Integer page) {
+		if (string == null || string.isEmpty()) {
+			return new PageSearch("", 1, 1, null);
+		}
+
+		List<Page> pages = pageService.search(string, page);
 
 		int length = pages.size();
 		int last = (int) Math.ceil(((float) length) / 10);
 		int to = Math.min(page * 10, length);
 		List<Page> show = pages.subList((page - 1) * 10, to);
 
-		return new PageSearch(search, page, last, pages);
+		return new PageSearch(string, page, last, pages);
 	}
 
 	public String getRandomPage() {

@@ -15,15 +15,19 @@ public class PageSearch {
 	private int current;
 	private int last;
 
-	private List<String> pages;
+	private List<PageSimple> pages;
 
 	public PageSearch(String search, int current, int last, List<Page> pages) {
 		this.search = search;
 		this.current = current;
 		this.last = last;
-		this.pages = pages.stream()
-			.map(Page::getTitle)
-			.collect(Collectors.toList());
+		if (pages == null) {
+			this.pages = null;
+		} else {
+			this.pages = pages.stream()
+				.map(PageSimple::new)
+				.collect(Collectors.toList());
+		}
 	}
 
 }
