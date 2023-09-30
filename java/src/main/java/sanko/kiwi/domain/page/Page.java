@@ -9,6 +9,7 @@ import org.springframework.data.annotation.LastModifiedDate;
 import org.commonmark.node.Node;
 import org.commonmark.parser.Parser;
 import org.commonmark.renderer.html.HtmlRenderer;
+import org.jsoup.Jsoup;
 
 import sanko.kiwi.domain.history.History;
 
@@ -57,6 +58,7 @@ public class Page {
 		Node node = parser.parse(content);
 		HtmlRenderer renderer = HtmlRenderer.builder().build();
 		this.html = renderer.render(node);
+		this.text = Jsoup.parse(this.html).text();
 	}
 
 	public void update(String title, String content) {
@@ -74,6 +76,7 @@ public class Page {
 		Node node = parser.parse(content);
 		HtmlRenderer renderer = HtmlRenderer.builder().build();
 		this.html = renderer.render(node);
+		this.text = Jsoup.parse(this.html).text();
 	}
 
 	public void lock(LocalDateTime lock, Integer lockId) {

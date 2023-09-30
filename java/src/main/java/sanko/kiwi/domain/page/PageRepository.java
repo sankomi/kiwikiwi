@@ -9,6 +9,6 @@ public interface PageRepository extends JpaRepository<Page, Long> {
 
 	Page findOneByTitle(String title);
 	Page findOneByTitleAndLockAndLockId(String title, LocalDateTime lock, Integer lockId);
-	List<Page> findByTitleContainingOrContentContaining(String title, String content);
+	List<Page> findByTitleContainingOrTextContaining(String title, String content);
 
 }

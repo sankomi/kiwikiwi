@@ -27,7 +27,7 @@ public class PageService {
 	}
 
 	public List<Page> search(String title, Integer page) {
-		return pageRepository.findByTitleContainingOrContentContaining(title, title);
+		return pageRepository.findByTitleContainingOrTextContaining(title, title);
 	}
 
 	public Page getRandomPage() {
