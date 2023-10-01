@@ -4,7 +4,7 @@ spring:
     hibernate:
       ddl-auto: update
   datasource:
-    url: jdbc:sqlite:db/test.db
+    url: jdbc:sqlite:db/test.db?date_class=TEXT
     driver-class-name: org.sqlite.JDBC
   test:
     database:

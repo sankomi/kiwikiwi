@@ -46,8 +46,7 @@ class PageTest {
 		String newHeading = "updatenewheading";
 		String newParagraph = "updatenewparagraph";
 		String newContent = String.format("# %s\n\n%s", newHeading, newParagraph);
-		page.updateTitle(newTitle);
-		page.updateContent(newContent);
+		page.update(newTitle, newContent);
 
 		//then
 		assertEquals(newTitle, page.getTitle());

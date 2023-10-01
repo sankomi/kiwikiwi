@@ -62,21 +62,14 @@ public class Page {
 	}
 
 	public void update(String title, String content) {
-		updateTitle(title);
-		updateContent(content);
-	}
-
-	public void updateTitle(String title) {
 		this.title = title;
-	}
-
-	public void updateContent(String content) {
 		this.content = content;
 		Parser parser = Parser.builder().build();
 		Node node = parser.parse(content);
 		HtmlRenderer renderer = HtmlRenderer.builder().build();
 		this.html = renderer.render(node);
 		this.text = Jsoup.parse(this.html).text();
+		this.refresh = LocalDateTime.now();
 	}
 
 	public void lock(LocalDateTime lock, Integer lockId) {
