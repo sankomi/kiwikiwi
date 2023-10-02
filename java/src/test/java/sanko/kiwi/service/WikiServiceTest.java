@@ -44,6 +44,32 @@ class WikiServiceTest {
 		return page;
 	}
 
+	private void updatePage(Page page, String title, String content, Integer event) {
+		History history = createHistory(page, title, content, event);
+		page.update(title, content);
+		List<History> historys = page.getHistorys();
+		if (historys == null) {
+			historys = new ArrayList<>();
+		}
+		historys.add(history);
+		setField(page, "historys", historys);
+		when(pageService.find(title))
+			.thenReturn(page);
+	}
+
+	private History createHistory(Page page, String title, String content, Integer event) {
+		History history = History.builder()
+			.page(page)
+			.event(event)
+			.summary("summary" + String.valueOf(event))
+			.title(title)
+			.content(content)
+			.build();
+		when(historyService.find(any(Page.class), eq(event)))
+			.thenReturn(history);
+		return history;
+	}
+
 	private List<History> createHistorys(Page page, int number) {
 		List<History> historys = new ArrayList();
 		for (int i = 0; i < number; i++) {
@@ -533,6 +559,29 @@ class WikiServiceTest {
 
 		//then
 		assertEquals("/history/" + title, back.getRedirect());
+	}
+
+	@Test
+	void testWikiRehash() {
+		//given
+		String prefix = "rehash";
+		String title = prefix + "title";
+		String content = prefix + "content";
+		Page page = createPage(title, content);
+
+		String oldTitle = prefix + "oldtitle";
+		String oldContent = prefix + "oldcontent";
+		updatePage(page, oldTitle, oldContent, 1);
+
+		String newTitle = prefix + "newtitle";
+		String newContent = prefix + "newcontent";
+		updatePage(page, newTitle, newContent, 2);
+
+		//when
+		PageRehash rehash = wikiService.rehash(newTitle, 1);
+
+		//then
+		assertEquals("/wiki/" + newTitle, rehash.getRedirect());
 	}
 
 	@Test

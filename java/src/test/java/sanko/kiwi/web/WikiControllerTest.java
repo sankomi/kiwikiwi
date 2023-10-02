@@ -22,7 +22,7 @@ import static org.mockito.ArgumentMatchers.eq;
 
 import sanko.kiwi.domain.page.Page;
 import sanko.kiwi.domain.history.History;
-import sanko.kiwi.dto.*; //PageView, PageEdit
+import sanko.kiwi.dto.*; //PageView, PageEdit, PageBack, PageRehash, PageDiff
 import sanko.kiwi.service.WikiService;
 
 @WebMvcTest(WikiController.class)
@@ -44,6 +44,16 @@ class WikiControllerTest {
 		when(wikiService.viewEdit(title))
 			.thenReturn(new PageEdit(page));
 		return page;
+	}
+
+	private History createHistory(Page page, String title, String content, String summary, Integer event) {
+		return History.builder()
+			.page(page)
+			.event(event)
+			.summary(summary)
+			.title(title)
+			.content(content)
+			.build();
 	}
 
 	private List<History> createHistorys(Page page, int number) {
@@ -207,6 +217,104 @@ class WikiControllerTest {
 		mockMvc.perform(get("/history/" + title))
 			.andExpect(status().isMovedTemporarily())
 			.andExpect(view().name("redirect:/wiki/" + title));
+	}
+
+	@Test
+	void testWikiBack() throws Exception {
+		//given
+		String prefix = "back";
+		String title = prefix + "title";
+		String content = prefix + "content";
+		Integer event = 1;
+		Page page = createPage(title, content);
+
+		when(wikiService.back(title, event))
+			.thenReturn(new PageBack(page, event));
+
+		//whenthen
+		mockMvc.perform(get("/back/" + title + "/" + String.valueOf(event)))
+			.andExpect(status().isOk())
+			.andExpect(view().name("back"))
+			.andExpect(model().attribute("page", hasProperty("title", equalTo(title))))
+			.andExpect(model().attribute("page", hasProperty("html", equalTo(page.getHtml()))))
+			.andExpect(model().attribute("page", hasProperty("event", equalTo(event))));
+	}
+
+	@Test
+	void testWikiBackNoPage() throws Exception {
+		//given
+		String prefix = "backnopage";
+		String title = prefix + "title";
+		Integer event = 4;
+
+		when(wikiService.back(title, event))
+			.thenReturn(new PageBack("/history/" + title));
+
+		//whenthen
+		mockMvc.perform(get("/back/" + title + "/" + String.valueOf(event)))
+			.andExpect(status().isMovedTemporarily())
+			.andExpect(view().name("redirect:/history/" + title));
+	}
+
+	@Test
+	void testWikiRehash() throws Exception {
+		//given
+		String prefix = "rehash";
+		String title = prefix + "title";
+		String content = prefix + "content";
+		Integer event = 2;
+		Page page = createPage(title, content);
+
+		when(wikiService.rehash(title, event))
+			.thenReturn(new PageRehash("/wiki/" + title));
+
+		//whenthen
+		mockMvc.perform(get("/rehash/" + title + "/" + String.valueOf(event)))
+			.andExpect(status().isMovedTemporarily())
+			.andExpect(view().name("redirect:/wiki/" + title));
+	}
+
+	@Test
+	void testWikiRehashNoPage() throws Exception {
+		//given
+		String prefix = "rehashnopage";
+		String title = prefix + "title";
+		Integer event = 6;
+
+		when(wikiService.rehash(title, event))
+			.thenReturn(new PageRehash("/wiki/" + title));
+
+		//whenthen
+		mockMvc.perform(get("/rehash/" + title + "/" + String.valueOf(event)))
+			.andExpect(status().isMovedTemporarily())
+			.andExpect(view().name("redirect:/wiki/" + title));
+	}
+
+	@Test
+	void testWikiDiff() throws Exception {
+		//given
+		String prefix = "diff";
+		String title = prefix + "title";
+		String content = prefix + "content";
+		String titleDiff = prefix + "titlediff";
+		String contentDiff = prefix + "contentdiff";
+		String summary = prefix + "summary";
+		Integer event = 3;
+		Page page = createPage(title, content);
+		History history = createHistory(page, title, content, summary, event);
+
+		when(wikiService.diff(title, event))
+			.thenReturn(new PageDiff(title, history, titleDiff, contentDiff));
+
+		//whenthen
+		mockMvc.perform(get("/diff/" + title + "/" + String.valueOf(event)))
+			.andExpect(status().isOk())
+			.andExpect(view().name("diff"))
+			.andExpect(model().attribute("page", hasProperty("title", equalTo(title))))
+			.andExpect(model().attribute("page", hasProperty("summary", equalTo(summary))))
+			.andExpect(model().attribute("page", hasProperty("titleDiff", equalTo(titleDiff))))
+			.andExpect(model().attribute("page", hasProperty("contentDiff", equalTo(contentDiff))))
+			.andExpect(model().attribute("page", hasProperty("event", equalTo(event))));
 	}
 
 }
