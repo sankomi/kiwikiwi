@@ -1,0 +1,1 @@
+docker stop $(docker ps | grep -E 'kiwi:(nginx|python|java)' | awk '{print $1}')
