@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<meta name="robots" content="noindex">
+
+		<link rel="stylesheet" href="/style.css">
+
+		<title th:text="${'history(' + page.title + ', ' + page.current + ');'}">kiwikiwi</title>
+	</head>
+	<body>
+		<form action="/search" method="get">
+			<input id="s" name="s" value="">
+			<button>search</button>
+		</form>
+		<h1>
+			history(<a th:href="${'/wiki/' + #uris.escapePath(page.title)}" th:text="${page.title}"></a>, <th:block th:text="${page.current}"/>);
+		</h1>
+		<nav>
+			<a th:href="${'/edit/' + #uris.escapePath(page.title)}">edit</a>
+			<a th:href="${'/history/' + #uris.escapePath(page.title)}">history</a>
+		</nav>
+		<ul>
+			<li th:each="history: ${page.historys}">
+				<p th:text="${history.summary + ' - ' + history.write}"/>
+				<div>
+					<a th:href="${'/back/' + #uris.escapePath(page.title) + '/' + #uris.escapePath(history.event)}">view</a>
+					<a th:href="${'/diff/' + #uris.escapePath(page.title) + '/' + #uris.escapePath(history.event)}">diff</a>
+					<a th:href="${'/rehash/' + #uris.escapePath(page.title) + '/' + #uris.escapePath(history.event)}">rehash</a>
+				</div>
+			</li>
+		</ul>
+		<div>
+			<a th:if="${page.current > 1 && page.current <= page.last}" th:href="${'/history/' + #uris.escapePath(page.title) + '/' + (page.current - 1)}">prev</a>
+			<span th:unless="${page.current > 1 && page.current <= page.last}"><del>prev</del></span>
+			<a th:if="${page.current >= 0 && page.current < page.last}" th:href="${'/history/' + #uris.escapePath(page.title) + '/' + (page.current + 1)}">next</a>
+			<span th:unless="${page.current >= 0 && page.current < page.last}"><del>next</del></span>
+		</div>
+	</body>
+</html>

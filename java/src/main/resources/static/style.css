@@ -1,0 +1,57 @@
+* {
+	box-sizing: border-box;
+}
+
+html {
+	font-family: monospace;
+}
+body {
+	max-width: 80rem;
+	padding: 0 1rem;
+	margin: 1rem auto;
+}
+
+a {
+	color: mediumpurple;
+}
+del {
+	color: grey;
+}
+label {
+	display: block;
+	margin: 0.5rem 0;
+}
+input, textarea, button {
+	padding: 0.5rem;
+	border: 1px solid #eee;
+
+	color: inherit;
+	font-size: inherit;
+	font-family: inherit;
+	font-weight: inherit;
+	line-height: inherit;
+}
+textarea {
+	resize: vertical;
+}
+.edit input,
+.edit textarea,
+.edit button {
+	display: block;
+	width: 100%;
+	margin: 0.5rem 0;
+}
+.edit textarea {
+	min-height: 20rem;
+}
+button {
+	background-color: #eee;
+}
+.diff ins {
+	color: green;
+	text-decoration: none;
+}
+.diff del {
+	color: red;
+	text-decoration: none;
+}

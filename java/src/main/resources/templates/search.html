@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<meta name="robots" content="noindex">
+
+		<link rel="stylesheet" href="/style.css">
+
+		<title th:if="${page.search != null && !page.search.isEmpty()}" th:text="${'search(' + page.search + ', ' + page.current + ');'}">kiwikiwi</title>
+		<title th:unless="${page.search != null && !page.search.isEmpty()}">search();</title>
+	</head>
+	<body>
+		<form action="/search" method="get">
+			<input id="s" name="s" th:value="${page.search}">
+			<button>search</button>
+		</form>
+		<h1 th:if="${page.search != null && !page.search.isEmpty()}">
+			search(<th:block th:text="${page.search}"/>, <th:block th:text="${page.current}"/>);
+		</h1>
+		<h1 th:unless="${page.search != null && !page.search.isEmpty()}">
+			search();
+		</h1>
+		<th:block th:if="${page.pages == null || page.pages.empty}">
+			<p>no pages found</p>
+		</th:block>
+		<th:block th:unless="${page.pages == null || page.pages.empty}">
+			<ul>
+				<li th:each="p: ${page.pages}">
+					<h2>
+						<a th:href="${'/wiki/' + #uris.escapePath(p.title)}" th:text="${p.title}"/>
+					</h2>
+					<th:block th:if="${#strings.length(p.text) > 100}">
+						<p th:text="${#strings.substring(p.text, 0, 100) + '...'}"/>
+					</th:block>
+					<th:block th:unless="${#strings.length(p.text) > 100}">
+						<p th:text="${p.text}"/>
+					</th:block>
+				</li>
+			</ul>
+			<div>
+				<a th:if="${page.current > 1 && page.current <= page.last}" th:href="${'/serach?s=' + #uris.escapePath(page.search) + '&p=' + (page.current - 1)}">prev</a>
+				<span th:unless="${page.current > 1 && page.current <= page.last}"><del>prev</del></span>
+				<a th:if="${page.current >= 0 && page.current < page.last}" th:href="${'/search?s=' + #uris.escapePath(page.search) + '&p=' + (page.current + 1)}">next</a>
+				<span th:unless="${page.current >= 0 && page.current < page.last}"><del>next</del></span>
+			</div>
+		</th:block>
+	</body>
+</html>

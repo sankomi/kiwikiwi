@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<meta name="robots" content="noindex">
+
+		<link rel="stylesheet" href="/style.css">
+
+		<title th:text="${'diff(' + page.title + ', ' + page.event + ');'}">kiwikiwi</title>
+	</head>
+	<body>
+		<form action="/search" method="get">
+			<input id="s" name="s" value="">
+			<button>search</button>
+		</form>
+		<h1>
+			diff(<a th:href="${'/wiki/' + #uris.escapePath(page.title)}" th:text="${page.title}"></a>, <th:block th:text="${page.event}"/>);
+		</h1>
+		<nav>
+			<a th:href="${'/edit/' + #uris.escapePath(page.title)}">edit</a>
+			<a th:href="${'/history/' + #uris.escapePath(page.title)}">history</a>
+			<a th:href="${'/back/' + #uris.escapePath(page.title) + '/' + #uris.escapePath(page.event)}">back</a>
+			<a th:href="${'/rehash/' + #uris.escapePath(page.title) + '/' + #uris.escapePath(page.event)}">rehash</a>
+		</nav>
+		<h2>title</h2>
+		<pre th:if="${page.titleDiff != null && !page.titleDiff.equals('')}" class="diff" th:utext="${page.titleDiff}"></pre>
+		<pre th:unless="${page.titleDiff != null && !page.titleDiff.equals('')}" class="diff">no change</pre>
+
+		<h2>content</h2>
+		<pre th:if="${page.contentDiff != null && !page.contentDiff.equals('')}" class="diff" th:utext="${page.contentDiff}"></pre>
+		<pre th:unless="${page.contentDiff != null && !page.contentDiff.equals('')}" class="diff">no change</pre>
+	</body>
+</html>

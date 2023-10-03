@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<meta name="robots" content="noindex">
+
+		<link rel="stylesheet" href="/style.css">
+
+		<title th:text="${title}">kiwikiwi</title>
+	</head>
+	<body>
+		<form action="/search" method="get">
+			<input id="s" name="s" value="">
+			<button>search</button>
+		</form>
+		<h1 th:text="${title}"></h1>
+		<nav>
+			<a th:href="${'/edit/' + #uris.escapePath(title)}">edit</a>
+			<a th:href="${'/history/' + #uris.escapePath(title)}">history</a>
+		</nav>
+		<p>page does not exist! <a th:href="${'/edit/' + #uris.escapePath(title)}">create</a></p>
+	</body>
+</html>
