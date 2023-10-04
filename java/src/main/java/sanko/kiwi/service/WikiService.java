@@ -47,6 +47,11 @@ public class WikiService {
 
 	public String getRandomPage() {
 		Page page = pageService.getRandomPage();
+
+		if (page == null) {
+			return "kiwikiwi";
+		}
+
 		return page.getTitle();
 	}
 
