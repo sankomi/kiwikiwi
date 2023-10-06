@@ -5,6 +5,19 @@
 html {
 	font-family: monospace;
 }
+.lang {
+	position: fixed;
+	right: 0.5rem;
+	top: 0.5rem;
+
+	opacity: 0.5;
+}
+.lang--java {
+	color: orange;
+}
+.lang--python {
+	color: royalblue;
+}
 body {
 	max-width: 80rem;
 	padding: 0 1rem;

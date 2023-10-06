@@ -54,8 +54,9 @@ public class Page {
 	public Page(String title, String content) {
 		this.title = title;
 		this.content = content;
+		String contentLinked = content.replaceAll("\\[\\[([^()\\[\\]\\n\\r*_`/\\\\]*)\\]\\]", "[$1](/wiki/$1)");
 		Parser parser = Parser.builder().build();
-		Node node = parser.parse(content);
+		Node node = parser.parse(contentLinked);
 		HtmlRenderer renderer = HtmlRenderer.builder().build();
 		this.html = renderer.render(node);
 		this.text = Jsoup.parse(this.html).text();
@@ -64,8 +65,9 @@ public class Page {
 	public void update(String title, String content) {
 		this.title = title;
 		this.content = content;
+		String contentLinked = content.replaceAll("\\[\\[([^()\\[\\]\\n\\r*_`/\\\\]*)\\]\\]", "[$1](/wiki/$1)");
 		Parser parser = Parser.builder().build();
-		Node node = parser.parse(content);
+		Node node = parser.parse(contentLinked);
 		HtmlRenderer renderer = HtmlRenderer.builder().build();
 		this.html = renderer.render(node);
 		this.text = Jsoup.parse(this.html).text();

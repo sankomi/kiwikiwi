@@ -32,7 +32,12 @@ public class PageService {
 
 	public Page getRandomPage() {
 		List<Page> pages = pageRepository.findAll();
+
 		int length = pages.size();
+		if (length == 0) {
+			return null;
+		}
+
 		Random random = new Random();
 		int index = random.nextInt(length);
 		return pages.get(index);

@@ -12,7 +12,7 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.web.server.ResponseStatusException;
 
 import static org.springframework.test.util.ReflectionTestUtils.setField;
-import static org.mockito.Mockito.*; //when, doAnswer, verify,
+import static org.mockito.Mockito.*; //when, doAnswer, verify, times
 import static org.junit.jupiter.api.Assertions.*; //assertEquals, assertTrue, assertThrows
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -120,6 +120,42 @@ class WikiServiceTest {
 
 		//then
 		assertEquals(null, pageView);
+	}
+
+	@Test
+	void testWikiRandomPage() {
+		//given
+		String prefix = "randompage";
+		String title = prefix + "title";
+		String content = prefix + "content";
+		Page page = createPage(title, content);
+
+		when(pageService.getRandomPage())
+			.thenReturn(page);
+
+		//when
+		String random = wikiService.getRandomPage();
+
+		//then
+		assertEquals(title, random);
+		verify(pageService, times(1)).getRandomPage();
+	}
+
+	@Test
+	void testWikiRandomPageNotFound() {
+		//given
+		String prefix = "randompagenotfound";
+		String title = prefix + "title";
+
+		when(pageService.getRandomPage())
+			.thenReturn(null);
+
+		//when
+		String random = wikiService.getRandomPage();
+
+		//then
+		assertEquals("kiwikiwi", random);
+		verify(pageService, times(1)).getRandomPage();
 	}
 
 	@Test

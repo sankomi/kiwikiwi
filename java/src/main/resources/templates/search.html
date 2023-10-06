@@ -11,6 +11,7 @@
 		<title th:unless="${page.search != null && !page.search.isEmpty()}">search();</title>
 	</head>
 	<body>
+		<div class="lang lang--java">java</div>
 		<form action="/search" method="get">
 			<input id="s" name="s" th:value="${page.search}">
 			<button>search</button>
