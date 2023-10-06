@@ -30,6 +30,26 @@ class PageTest {
 	}
 
 	@Test
+	void testPageLink() {
+		//given
+		String prefix = "pagelink";
+		String title = prefix + "title";
+		String content = "[[test]]";
+
+		//when
+		Page page = Page.builder()
+			.title(title)
+			.content(content)
+			.build();
+
+		//then
+		assertEquals(title, page.getTitle());
+		assertEquals(content, page.getContent());
+		assertTrue(page.getHtml().contains("<a"));
+		assertTrue(page.getHtml().contains("/wiki/test"));
+	}
+
+	@Test
 	void testPageUpdate() {
 		//given
 		String title = "updatetitle";
