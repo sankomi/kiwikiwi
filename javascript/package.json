@@ -1,0 +1,10 @@
+{
+	"name": "kiwi",
+	"author": "sanko",
+	"description": "kiwikiwi is wikiwiki",
+	"version": "0.0.1",
+	"dependencies": {
+		"sequelize": "^6.33.0",
+		"sqlite3": "^5.1.6"
+	}
+}
