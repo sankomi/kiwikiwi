@@ -1,15 +1,15 @@
 const Sequelize = require("sequelize");
-const sequelize = new Sequelize(
+const sqlite = new Sequelize(
 	"database",
 	"username",
 	"password",
 	{
 		dialect: "sqlite",
-		storage: "data/kiwi.db",
+		storage: process.env.DATA_PATH || "data/kiwi.db",
 	},
 );
 
-const Page = sequelize.define(
+const Page = sqlite.define(
 	"Page",
 	{
 		id: {
@@ -42,7 +42,7 @@ const Page = sequelize.define(
 	},
 );
 
-const History = sequelize.define(
+const History = sqlite.define(
 	"History",
 	{
 		id: {
