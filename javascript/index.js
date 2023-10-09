@@ -12,4 +12,15 @@ app.get("/", (req, res) => {
 	res.render("index");
 });
 
+app.get("/wiki/:title", async (req, res) => {
+	const title = req.params.title;
+	const page = await Page.findOne({where: {title}});
+
+	if (page === null) {
+		res.render("not-exist", {page: {title}});
+	} else {
+		res.render("view", {page});
+	}
+});
+
 app.listen(port, () => console.log(`on ${port}`));
