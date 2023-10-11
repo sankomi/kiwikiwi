@@ -29,9 +29,10 @@ app.get("/edit/:title", async (req, res) => {
 	const page = await Page.findOne({where: {title}});
 
 	if (page === null) {
-		const emptyPage = Page.build({title});
+		const emptyPage = Page.build({title, newTitle: title});
 		res.render("edit", {page: emptyPage});
 	} else {
+		page.newTitle = title;
 		res.render("edit", {page});
 	}
 });

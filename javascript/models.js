@@ -1,4 +1,6 @@
 const Sequelize = require("sequelize");
+const marked = require("marked");
+
 const sqlite = new Sequelize(
 	"database",
 	"username",
@@ -22,7 +24,13 @@ const Page = sqlite.define(
 			unique: true,
 			allowNull: false,
 		},
-		content: {type: Sequelize.TEXT},
+		content: {
+			type: Sequelize.TEXT,
+			set(value) {
+				this.setDataValue("content", value);
+				this.setDataValue("html", marked.parse(value));
+			},
+		},
 		html: {type: Sequelize.TEXT},
 		text: {type: Sequelize.TEXT},
 		lock: {type: Sequelize.DATE},
