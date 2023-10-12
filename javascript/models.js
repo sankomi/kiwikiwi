@@ -1,5 +1,6 @@
 const Sequelize = require("sequelize");
 const marked = require("marked");
+const JSSoup = require("jssoup").default;
 
 const sqlite = new Sequelize(
 	"database",
@@ -27,8 +28,12 @@ const Page = sqlite.define(
 		content: {
 			type: Sequelize.TEXT,
 			set(value) {
+				let html = marked.parse(value);
+				let soup = new JSSoup(html);
+				let text = soup.text;
 				this.setDataValue("content", value);
-				this.setDataValue("html", marked.parse(value));
+				this.setDataValue("html", html);
+				this.setDataValue("text", text);
 			},
 		},
 		html: {type: Sequelize.TEXT},
