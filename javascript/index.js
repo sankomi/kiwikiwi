@@ -43,30 +43,44 @@ app.post("/edit/:title", async (req, res) => {
 	const summary = req.body.summary;
 	const content = req.body.content;
 
-	let page = await Page.findOne({where: {title}});
-	if (page === null) page = Page.build();
-
-	if (title === newTitle) {
+	let updated;
+	try {
+		updated = await update(title, newTitle, content, summary);
+	} catch (err) {
+		let page = Page.build();
 		page.title = title;
 		page.content = content;
-		page.save();
-		res.redirect(`/wiki/${title}`);
-	} else {
-		const exist = await Page.findOne({where: {title: newTitle}});
-		if (exist) {
-			res.render("edit", {page: {
-				title,
-				newTitle,
-				summary,
-				content,
-			}});
-		} else {
-			page.title = newTitle;
-			page.content = content;
-			page.save();
-			res.redirect(`/wiki/${newTitle}`);
+		return res.render("edit", {page});
+	}
+
+	res.redirect(`/wiki/${updated.title}`);
+});
+
+async function update(title, newTitle, content, summary) {
+	let page = await Page.findOne({where: {title}});
+
+	if (title !== newTitle) {
+		let newPage = await Page.findOne({where: {title: newTitle}});
+
+		if (newPage !== null) {
+			throw new Error("page with new title already exists");
 		}
 	}
-});
+
+	if (page === null) {
+		page = Page.build();
+		page.title = newTitle;
+		page.content = content;
+		page.save();
+
+		return page;
+	}
+
+	page.title = newTitle;
+	page.content = content;
+	page.save();
+
+	return page;
+}
 
 app.listen(port, () => console.log(`on ${port}`));
