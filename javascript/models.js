@@ -39,7 +39,10 @@ const Page = sqlite.define(
 		html: {type: Sequelize.TEXT},
 		text: {type: Sequelize.TEXT},
 		lock: {type: Sequelize.DATE},
-		lock_id: {type: Sequelize.INTEGER},
+		lockId: {
+			type: Sequelize.INTEGER,
+			field: "lock_id",
+		},
 		refresh: {
 			type: Sequelize.DATE,
 			defaultValue: Sequelize.NOW,

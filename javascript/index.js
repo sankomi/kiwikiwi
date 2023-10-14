@@ -29,7 +29,8 @@ app.get("/edit/:title", async (req, res) => {
 	const page = await Page.findOne({where: {title}});
 
 	if (page === null) {
-		const emptyPage = Page.build({title, newTitle: title});
+		const emptyPage = Page.build({title});
+		emptyPage.newTitle = title;
 		res.render("edit", {page: emptyPage});
 	} else {
 		page.newTitle = title;
@@ -49,6 +50,7 @@ app.post("/edit/:title", async (req, res) => {
 	} catch (err) {
 		let page = Page.build();
 		page.title = title;
+		page.newTitle = title;
 		page.content = content;
 		return res.render("edit", {page});
 	}
@@ -71,16 +73,48 @@ async function update(title, newTitle, content, summary) {
 		page = Page.build();
 		page.title = newTitle;
 		page.content = content;
-		page.save();
+		await page.save();
 
 		return page;
 	}
 
-	page.title = newTitle;
-	page.content = content;
-	page.save();
+	if (page.lock !== null && page.lock <= new Date()) {
+		page.lockId = null;
+		page.lock = null;
+		await page.save();
+	}
 
-	return page;
+	let id = page.id;
+	let lockId = Math.floor(Math.random() * 2147483647);
+	let lock = new Date(+new Date() + 60000);
+
+	await Page.update(
+		{lockId, lock},
+		{where: {
+			id,
+			lockId: null,
+		}},
+	);
+
+	let locked = await Page.findOne({
+		where :{
+			title,
+			lock,
+			lockId,
+		},
+	});
+
+	if (locked === null) {
+		throw new Error("page is locked");
+	}
+
+	locked.title = newTitle;
+	locked.content = content;
+	locked.lockId = null;
+	locked.lock = null;
+	await locked.save();
+
+	return locked;
 }
 
 app.listen(port, () => console.log(`on ${port}`));
