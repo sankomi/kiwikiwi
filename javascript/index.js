@@ -2,6 +2,7 @@ require("dotenv").config();
 const express = require("express");
 const path = require("path");
 const {Page, History} = require("./models");
+const DiffMatchPatch = require("diff-match-patch");
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -75,6 +76,17 @@ async function update(title, newTitle, content, summary) {
 		page.content = content;
 		await page.save();
 
+		let titlePatch = getPatch("", newTitle);
+		let contentPatch = getPatch("", content);
+
+		let history = History.build({
+			summary,
+			title: titlePatch,
+			cntent: contentPatch,
+		});
+		await history.save()
+			.then(() => history.setPage(page));
+
 		return page;
 	}
 
@@ -102,11 +114,25 @@ async function update(title, newTitle, content, summary) {
 			lock,
 			lockId,
 		},
+		include: [History],
+		order: [[History, "event", "DESC"]],
 	});
 
 	if (locked === null) {
 		throw new Error("page is locked");
 	}
+
+	let titlePatch = getPatch(locked.title, newTitle);
+	let contentPatch = getPatch(locked.content, content);
+	let event = locked.histories[0].event + 1;
+	let history = History.build({
+		summary,
+		event,
+		title: titlePatch,
+		content: contentPatch,
+	});
+	await history.save()
+		.then(() => history.setPage(locked));
 
 	locked.title = newTitle;
 	locked.content = content;
@@ -115,6 +141,21 @@ async function update(title, newTitle, content, summary) {
 	await locked.save();
 
 	return locked;
+}
+
+function getPatch(text1, text2) {
+	let dmp = new DiffMatchPatch();
+	let diff = dmp.diff_main(text1, text2, false);
+	dmp.diff_cleanupSemantic(diff);
+	let patch = dmp.patch_make(diff);
+	return dmp.patch_toText(patch);
+}
+
+function applyPatch(text, patchText) {
+	let dmp = new DiffMatchPatch();
+	let patch = dmp.patch_fromText(patchText);
+	let newText = dmp.patch_apply(patch, text);
+	return newText;
 }
 
 app.listen(port, () => console.log(`on ${port}`));

@@ -13,7 +13,7 @@ const sqlite = new Sequelize(
 );
 
 const Page = sqlite.define(
-	"Page",
+	"page",
 	{
 		id: {
 			type: Sequelize.INTEGER,
@@ -59,7 +59,7 @@ const Page = sqlite.define(
 );
 
 const History = sqlite.define(
-	"History",
+	"history",
 	{
 		id: {
 			type: Sequelize.INTEGER,
