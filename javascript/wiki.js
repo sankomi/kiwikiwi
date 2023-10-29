@@ -1,41 +1,34 @@
 const {Page, History} = require("./models");
 const DiffMatchPatch = require("diff-match-patch");
 
-function index(req, res) {
-	res.render("index");
+function index() {
+	return {name: "index"};
 }
 
-async function view(req, res) {
-	const title = req.params.title;
+async function view(title) {
 	const page = await Page.findOne({where: {title}});
 
 	if (page === null) {
-		res.render("not-exist", {page: {title}});
+		return {name: "not-exist", data: {page: {title}}};
 	} else {
-		res.render("view", {page});
+		return {name: "view", data: {page}};
 	}
 }
 
-async function editView(req, res) {
-	const title = req.params.title;
+async function editView(title) {
 	const page = await Page.findOne({where: {title}});
 
 	if (page === null) {
 		const emptyPage = Page.build({title});
 		emptyPage.newTitle = title;
-		res.render("edit", {page: emptyPage});
+		return {name: "edit", data: {page: emptyPage}};
 	} else {
 		page.newTitle = title;
-		res.render("edit", {page});
+		return {name: "edit", data: {page}};
 	}
 }
 
-async function editEdit(req, res) {
-	const title = req.params.title;
-	const newTitle = req.body.title;
-	const summary = req.body.summary;
-	const content = req.body.content;
-
+async function editEdit(title, newTitle, summary, content) {
 	let updated;
 	try {
 		updated = await update(title, newTitle, content, summary);
@@ -44,10 +37,10 @@ async function editEdit(req, res) {
 		page.title = title;
 		page.newTitle = title;
 		page.content = content;
-		return res.render("edit", {page});
+		return {name: "edit", data: {page}};
 	}
 
-	res.redirect(`/wiki/${updated.title}`);
+	return {redirect: `/wiki/${updated.title}`};
 }
 
 async function update(title, newTitle, content, summary) {
