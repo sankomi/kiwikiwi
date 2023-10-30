@@ -3,6 +3,9 @@
 	"author": "sanko",
 	"description": "kiwikiwi is wikiwiki",
 	"version": "0.0.1",
+	"scripts": {
+		"test": "mocha --exit"
+	},
 	"dependencies": {
 		"diff-match-patch": "^1.0.5",
 		"dotenv": "^16.3.1",
@@ -12,5 +15,9 @@
 		"marked": "^9.1.0",
 		"sequelize": "^6.33.0",
 		"sqlite3": "^5.1.6"
+	},
+	"devDependencies": {
+		"mocha": "^10.2.0",
+		"sinon": "^17.0.0"
 	}
 }
