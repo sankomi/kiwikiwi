@@ -31,7 +31,7 @@ async function editView(title) {
 async function editEdit(title, newTitle, summary, content) {
 	let updated;
 	try {
-		updated = await update(title, newTitle, content, summary);
+		updated = await update(title, newTitle, summary, content);
 	} catch (err) {
 		let page = Page.build();
 		page.title = title;
@@ -43,7 +43,7 @@ async function editEdit(title, newTitle, summary, content) {
 	return {redirect: `/wiki/${updated.title}`};
 }
 
-async function update(title, newTitle, content, summary) {
+async function update(title, newTitle, summary, content) {
 	let page = await Page.findOne({where: {title}});
 
 	if (title !== newTitle) {

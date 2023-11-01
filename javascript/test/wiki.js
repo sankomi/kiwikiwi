@@ -1,8 +1,9 @@
 const assert = require("assert").strict;
 const sinon = require("sinon");
 const {replace, fake, restore} = sinon;
+const rewire = require("rewire");
 
-const wiki = require("../wiki");
+const wiki = rewire("../wiki");
 const {Page} = require("../models");
 
 describe("wiki.js", function() {
@@ -73,5 +74,41 @@ describe("wiki.js", function() {
 		});
 	});
 
-	afterEach(sinon.restore);
+	describe("editEdit(title, newTitle, summary, content)", function() {
+		describe("if updated", function() {
+			let title = "editeditupdated";
+			let newTitle = "editeditupdatednewtitle";
+			let summary = "editeditupdatedsummary";
+			let content = "editeditupdatedcontent";
+			let updated = {title: newTitle};
+
+			it("should redirect to view page", async function() {
+				let update = wire(wiki, "update", args => updated);
+
+				let view = await wiki.editEdit(title, newTitle, summary, content);
+				assert.equal(update.callCount, 1);
+				assert.deepEqual(view, {redirect: `/wiki/${newTitle}`});
+			});
+		});
+	});
+
+	afterEach(() => {
+		restore();
+		unwire();
+	});
 });
+
+const reverts = [];
+
+function wire(mod, name, func) {
+	let obj = {[name]: mod.__get__(name)};
+	let rep = replace(obj, name, fake(func));
+	reverts.push(mod.__set__(name, rep));
+
+	return rep;
+}
+
+function unwire() {
+	reverts.forEach(revert => revert());
+	reverts.length = 0;
+}
