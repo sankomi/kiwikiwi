@@ -5,6 +5,7 @@ const rewire = require("rewire");
 
 const wiki = rewire("../wiki");
 const {Page} = require("../models");
+const {TitleDuplicateError, PageLockError} = require("../error");
 
 describe("wiki.js", function() {
 	describe("index()", function() {
@@ -49,7 +50,7 @@ describe("wiki.js", function() {
 
 			it("should return edit view with title and new title", async function() {
 				let findOne = replace(Page, "findOne", fake(args => null));
-				let build = replace(Page, "build", fake(args => ({title: args.title})));
+				let build = replace(Page, "build", fake(args => ({...args})));
 
 				let view = await wiki.editView(title);
 				assert.equal(findOne.callCount, 1);
@@ -83,11 +84,49 @@ describe("wiki.js", function() {
 			let updated = {title: newTitle};
 
 			it("should redirect to view page", async function() {
-				let update = wire(wiki, "update", args => updated);
+				let update = wireFunc(wiki, "update", args => updated);
 
 				let view = await wiki.editEdit(title, newTitle, summary, content);
 				assert.equal(update.callCount, 1);
 				assert.deepEqual(view, {redirect: `/wiki/${newTitle}`});
+			});
+		});
+
+		describe("if update fails due to duplicate title", function() {
+			let title = "editeditupdateduplicatetitle";
+			let newTitle = "editeditupdateduplicatetitlenewtitle";
+			let summary = "editeditupdateduplicatetitlesummary";
+			let content = "editeditupdateduplicatetitlecontent";
+			let page = {title, summary, content};
+
+			it("should return edit view with edit details", async function() {
+				let update = wireError(wiki, "update", TitleDuplicateError, "page with new title already exists");
+				let build = replace(Page, "build", fake(args => ({...args})));
+
+				let view = await wiki.editEdit(title, newTitle, summary, content);
+				assert.equal(update.callCount, 1);
+				assert.equal(build.callCount, 1);
+				assert.equal(view.name, "edit");
+				assert.deepEqual(view.data, {page: {...page, newTitle: title}});
+			});
+		});
+
+		describe("if update fails due to page lock", function() {
+			let title = "editeditupdatepagelock";
+			let newTitle = "editeditupdatepagelocknewtitle";
+			let summary = "editeditupdatepagelocksummary";
+			let content = "editeditupdatepagelockcontent";
+			let page = {title, summary, content};
+
+			it("should return edit view with edit details", async function() {
+				let update = wireError(wiki, "update", PageLockError, "page is locked");
+				let build = replace(Page, "build", fake(args => ({...args})));
+
+				let view = await wiki.editEdit(title, newTitle, summary, content);
+				assert.equal(update.callCount, 1);
+				assert.equal(build.callCount, 1);
+				assert.equal(view.name, "edit");
+				assert.deepEqual(view.data, {page: {...page, newTitle: title}});
 			});
 		});
 	});
@@ -100,12 +139,20 @@ describe("wiki.js", function() {
 
 const reverts = [];
 
-function wire(mod, name, func) {
+function wire(mod, name, fake) {
 	let obj = {[name]: mod.__get__(name)};
-	let rep = replace(obj, name, fake(func));
+	let rep = replace(obj, name, fake);
 	reverts.push(mod.__set__(name, rep));
 
 	return rep;
+}
+
+function wireFunc(mod, name, func) {
+	return wire(mod, name, fake(func));
+}
+
+function wireError(mod, name, Err, message) {
+	return wire(mod, name, fake.throws(new Err(message)));
 }
 
 function unwire() {

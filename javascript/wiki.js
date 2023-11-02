@@ -1,4 +1,5 @@
 const {Page, History} = require("./models");
+const {TitleDuplicateError, PageLockError} = require("./error");
 const DiffMatchPatch = require("diff-match-patch");
 
 function index() {
@@ -33,11 +34,13 @@ async function editEdit(title, newTitle, summary, content) {
 	try {
 		updated = await update(title, newTitle, summary, content);
 	} catch (err) {
-		let page = Page.build();
-		page.title = title;
-		page.newTitle = title;
-		page.content = content;
-		return {name: "edit", data: {page}};
+		if (err instanceof TitleDuplicateError || err instanceof PageLockError) {
+			let page = Page.build({title, summary, content});
+			page.newTitle = title;
+			return {name: "edit", data: {page}};
+		} else {
+			throw err;
+		}
 	}
 
 	return {redirect: `/wiki/${updated.title}`};
@@ -50,7 +53,7 @@ async function update(title, newTitle, summary, content) {
 		let newPage = await Page.findOne({where: {title: newTitle}});
 
 		if (newPage !== null) {
-			throw new Error("page with new title already exists");
+			throw new TitleDuplicateError("page with new title already exists");
 		}
 	}
 
@@ -103,7 +106,7 @@ async function update(title, newTitle, summary, content) {
 	});
 
 	if (locked === null) {
-		throw new Error("page is locked");
+		throw new PageLockError("page is locked");
 	}
 
 	let titlePatch = getPatch(locked.title, newTitle);
