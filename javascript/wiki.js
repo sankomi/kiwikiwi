@@ -58,9 +58,7 @@ async function update(title, newTitle, summary, content) {
 	}
 
 	if (page === null) {
-		page = Page.build();
-		page.title = newTitle;
-		page.content = content;
+		page = Page.build({title: newTitle, content});
 		await page.save();
 
 		let titlePatch = getPatch("", newTitle);
@@ -69,7 +67,7 @@ async function update(title, newTitle, summary, content) {
 		let history = History.build({
 			summary,
 			title: titlePatch,
-			cntent: contentPatch,
+			content: contentPatch,
 		});
 		await history.save()
 			.then(() => history.setPage(page));
