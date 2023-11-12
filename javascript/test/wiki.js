@@ -220,6 +220,157 @@ describe("wiki.js", function() {
 				});
 			});
 		});
+
+		describe("if page is not locked", function() {
+			let prefix = "updatenotlocked";
+			let title = prefix + "title";
+			let newTitle = title;
+			let summary = prefix + "summary";
+			let content = prefix + "content";
+
+			describe("and page cannot be locked", function() {
+				it("should throw page lock error", async function() {
+					let page = {title, content};
+					let findOne = replace(Page, "findOne", fake(args => {
+						let where = args.where;
+						if (where.title === title) {
+							if (where.lock || where.lockId)  {
+								return null;
+							} else {
+								return page;
+							}
+						} else {
+							return null;
+						}
+					}));
+					let pageUpdate = replace(Page, "update", fake());
+
+					await assert.rejects(
+						async () => await update(title, newTitle, summary, content),
+						PageLockError,
+						"page is locked",
+					);
+					assert.equal(findOne.callCount, 2);
+					assert.equal(pageUpdate.callCount, 1);
+				});
+			});
+
+			describe("and page can be locked", function() {
+				it("should return updated page", async function() {
+					let historyEvent = randomInt();
+					let pageSave = fake();
+					let page = {title, content, save: pageSave};
+					let pageFindOne = replace(Page, "findOne", fake(args => {
+						let where = args.where;
+						if (where.title === title) {
+							if (where.lock || where.lockId)  {
+								page.lock = where.lock;
+								page.lockId = where.lockId;
+								page.histories = [{event: historyEvent}];
+								return page;
+							} else {
+								return page;
+							}
+						} else {
+							return null;
+						}
+					}));
+					let pageUpdate = replace(Page, "update", fake());
+					let getPatch = wireFunc(wiki, "getPatch", args => "patch");
+					let historySave = fake(async () => null);
+					let historySetPage = fake();
+					let historyBuild = replace(History, "build", fake(args => ({...args, save: historySave, setPage: historySetPage})));
+
+					let locked = await update(title, newTitle, summary, content);
+					assert.equal(pageFindOne.callCount, 2);
+					[pageUpdate, pageSave].forEach(func => assert.equal(func.callCount, 1));
+					[historyBuild, historySave, historySetPage].forEach(func => assert.equal(func.callCount, 1));
+					assert.equal(getPatch.callCount, 2)
+					assert.equal(locked.title, newTitle);
+					assert.equal(locked.content, content);
+					assert.equal(locked.lock, null);
+					assert.equal(locked.lockId, null);
+				});
+			});
+		});
+
+		describe("if page is locked", function() {
+			let prefix = "updatelocked";
+			let title = prefix + "title";
+			let newTitle = title;
+			let summary = prefix + "summary";
+			let content = prefix + "content";
+
+			describe("and lock is expired", function() {
+				it("should return updated page", async function() {
+					let lockId = randomInt();
+					let lock = new Date(+new Date() - 100000);
+					let historyEvent = randomInt();
+					let pageSave = fake();
+					let page = {title, content, lockId, lock, save: pageSave};
+					let pageFindOne = replace(Page, "findOne", fake(args => {
+						let where = args.where;
+						if (where.title === title) {
+							if (where.lock || where.lockId)  {
+								page.lock = where.lock;
+								page.lockId = where.lockId;
+								page.histories = [{event: historyEvent}];
+								return page;
+							} else {
+								return page;
+							}
+						} else {
+							return null;
+						}
+					}));
+					let pageUpdate = replace(Page, "update", fake());
+					let getPatch = wireFunc(wiki, "getPatch", args => "patch");
+					let historySave = fake(async () => null);
+					let historySetPage = fake();
+					let historyBuild = replace(History, "build", fake(args => ({...args, save: historySave, setPage: historySetPage})));
+
+					let locked = await update(title, newTitle, summary, content);
+					[pageFindOne, pageSave].forEach(func => assert.equal(func.callCount, 2));
+					assert.equal(pageUpdate.callCount, 1);
+					[historyBuild, historySave, historySetPage].forEach(func => assert.equal(func.callCount, 1));
+					assert.equal(getPatch.callCount, 2)
+					assert.equal(locked.title, newTitle);
+					assert.equal(locked.content, content);
+					assert.equal(locked.lock, null);
+					assert.equal(locked.lockId, null);
+				});
+			});
+
+			describe("and lock is not expired", function() {
+				it("should throw page lock error", async function() {
+					let lockId = randomInt();
+					let lock = new Date();
+					let pageSave = fake();
+					let page = {title, content, lockId, lock, save: pageSave};
+					let findOne = replace(Page, "findOne", fake(args => {
+						let where = args.where;
+						if (where.title === title) {
+							if (where.lock || where.lockId)  {
+								return null;
+							} else {
+								return page;
+							}
+						} else {
+							return null;
+						}
+					}));
+					let pageUpdate = replace(Page, "update", fake());
+
+					await assert.rejects(
+						async () => await update(title, newTitle, summary, content),
+						PageLockError,
+						"page is locked",
+					);
+					assert.equal(findOne.callCount, 2);
+					[pageUpdate, pageSave].forEach(func => assert.equal(func.callCount, 1));
+				});
+			});
+		});
 	});
 
 	afterEach(() => {
@@ -227,6 +378,10 @@ describe("wiki.js", function() {
 		unwire();
 	});
 });
+
+function randomInt() {
+	return 1 + Math.floor(Math.random() * 2147483648);
+}
 
 const reverts = [];
 
