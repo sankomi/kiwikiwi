@@ -46,6 +46,24 @@ async function editEdit(title, newTitle, summary, content) {
 	return {redirect: `/wiki/${updated.title}`};
 }
 
+async function history(title, current = 1) {
+	let page = await Page.findOne({
+		where: {title},
+		include: [History],
+		order: [[History, "event", "DESC"]],
+	});
+
+	if (page === null) {
+		return {redirect: `/wiki/${title}`};
+	} else {
+		last = Math.ceil(page.histories.length / 10);
+		page.histories = page.histories.slice((current - 1) * 10, current * 10);
+		page.current = current;
+		page.last = last;
+		return {name: "history", data: {page}};
+	}
+}
+
 async function update(title, newTitle, summary, content) {
 	let page = await Page.findOne({where: {title}});
 
@@ -147,4 +165,5 @@ module.exports = {
 	index,
 	view,
 	editView, editEdit,
+	history,
 }

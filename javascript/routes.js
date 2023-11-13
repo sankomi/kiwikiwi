@@ -34,6 +34,13 @@ router.post("/edit/:title", async (req, res) => {
 	render(res, view);
 });
 
+router.get("/history/:title", async (req, res) => {
+	let title = req.params.title;
+
+	let view = await wiki.history(title);
+	render(res, view);
+});
+
 function render(res, view) {
 	if (view.redirect) {
 		res.redirect(view.redirect);
