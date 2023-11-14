@@ -35,7 +35,7 @@ async function editEdit(title, newTitle, summary, content) {
 		updated = await update(title, newTitle, summary, content);
 	} catch (err) {
 		if (err instanceof TitleDuplicateError || err instanceof PageLockError) {
-			let page = Page.build({title, summary, content});
+			let page = Page.build({title, content});
 			page.newTitle = title;
 			return {name: "edit", data: {page}};
 		} else {
@@ -57,6 +57,9 @@ async function history(title, current = 1) {
 		return {redirect: `/wiki/${title}`};
 	} else {
 		last = Math.ceil(page.histories.length / 10);
+		if (current < 1) current = 1;
+		else if (current > last) current = last;
+
 		page.histories = page.histories.slice((current - 1) * 10, current * 10);
 		page.current = current;
 		page.last = last;

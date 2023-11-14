@@ -103,7 +103,7 @@ describe("wiki.js", function() {
 			let newTitle = prefix + "newtitle";
 			let summary = prefix + "summary";
 			let content = prefix + "content";
-			let page = {title, summary, content};
+			let page = {title, content};
 
 			it("should return edit view with edit details", async function() {
 				let update = wireError(wiki, "update", TitleDuplicateError, "page with new title already exists");
@@ -123,7 +123,7 @@ describe("wiki.js", function() {
 			let newTitle = prefix + "newtitle";
 			let summary = prefix + "summary";
 			let content = prefix + "content";
-			let page = {title, summary, content};
+			let page = {title, content};
 
 			it("should return edit view with edit details", async function() {
 				let update = wireError(wiki, "update", PageLockError, "page is locked");
@@ -134,6 +134,132 @@ describe("wiki.js", function() {
 				assert.equal(build.callCount, 1);
 				assert.equal(view.name, "edit");
 				assert.deepEqual(view.data, {page: {...page, newTitle: title}});
+			});
+		});
+	});
+
+	describe("history(title, current)", function() {
+		describe("if page exists", function() {
+			let prefix = "historypage";
+			let title = prefix + "title";
+			let content = prefix + "content";
+			let historyTitle = prefix + "historytitle";
+			let historySummary = prefix + "historysummary";
+			let historyContent = prefix + "historycontent";
+			let pageTemp = {
+				title, content,
+				histories: [...Array(25).keys()].map(i => i + 1)
+					.map(event => ({
+						title: historyTitle + String(event),
+						summary: historySummary + String(event),
+						content: historyContent + String(event),
+					})),
+			};
+
+			describe("and page number is not given", function() {
+				let page = clone(pageTemp);
+				it("should render history view with first 10 histories", async function() {
+					let findOne = replace(Page, "findOne", fake(args => page));
+
+					let view = await wiki.history(title);
+					assert.equal(findOne.callCount, 1);
+					assert.equal(view.name, "history");
+					assert.equal(view.data.page.title, title);
+					assert.equal(view.data.page.current, 1);
+					assert.equal(view.data.page.last, 3);
+					assert.equal(view.data.page.histories.length, 10);
+					assert.equal(view.data.page.histories[2].title, historyTitle + "3");
+				});
+			});
+
+			describe("and page number is in middle", function() {
+				let current = 2;
+				let page = clone(pageTemp);
+
+				it("should render history view with middle 10 histories", async function() {
+					let findOne = replace(Page, "findOne", fake(args => page));
+
+					let view = await wiki.history(title, current);
+					assert.equal(findOne.callCount, 1);
+					assert.equal(view.name, "history");
+					assert.equal(view.data.page.title, title);
+					assert.equal(view.data.page.current, current);
+					assert.equal(view.data.page.last, 3);
+					assert.equal(view.data.page.histories.length, 10);
+					assert.equal(view.data.page.histories[2].title, historyTitle + "13");
+				});
+			});
+
+			describe("and page number is at end", function() {
+				let current = 3;
+				let page = clone(pageTemp);
+
+				it("should render history view with <= 10 histories", async function() {
+					let findOne = replace(Page, "findOne", fake(args => page));
+
+					let view = await wiki.history(title, current);
+					assert.equal(findOne.callCount, 1);
+					assert.equal(view.name, "history");
+					assert.equal(view.data.page.title, title);
+					assert.equal(view.data.page.current, current);
+					assert.equal(view.data.page.last, 3);
+					assert.equal(view.data.page.histories.length, 5);
+					assert.equal(view.data.page.histories[2].title, historyTitle + "23");
+				});
+			});
+
+			describe("and page number is less than 1", function() {
+				let current = -4;
+				let page = clone(pageTemp);
+
+				it("should render history view with first page", async function() {
+					let findOne = replace(Page, "findOne", fake(args => page));
+
+					let view = await wiki.history(title, current);
+					assert.equal(findOne.callCount, 1);
+					assert.equal(view.name, "history");
+					assert.equal(view.data.page.title, title);
+					assert.equal(view.data.page.current, 1);
+					assert.equal(view.data.page.last, 3);
+					assert.equal(view.data.page.histories.length, 10);
+					assert.equal(view.data.page.histories[2].title, historyTitle + "3");
+				});
+			});
+
+			describe("and page number is too big", function() {
+				let current = 10;
+				let page = clone(pageTemp);
+
+				it("should render history view with last page", async function() {
+					let findOne = replace(Page, "findOne", fake(args => page));
+
+					let view = await wiki.history(title, current);
+					assert.equal(findOne.callCount, 1);
+					assert.equal(view.name, "history");
+					assert.equal(view.data.page.title, title);
+					assert.equal(view.data.page.current, 3);
+					assert.equal(view.data.page.last, 3);
+					assert.equal(view.data.page.histories.length, 5);
+					assert.equal(view.data.page.histories[2].title, historyTitle + "23");
+				});
+			});
+		});
+
+		describe("if page does not exist", function() {
+			let prefix = "historynopage";
+			let current = randomInt();
+			let title = prefix + "title";
+			let content = prefix + "content";
+			let historyTitle = prefix + "historytitle";
+			let historySummary = prefix + "historysummary";
+			let historyContent = prefix + "historycontent";
+
+			it("should redirect to page", async function() {
+				let findOne = replace(Page, "findOne", fake(args => null));
+
+				let view = await wiki.history(title, current);
+				assert.equal(findOne.callCount, 1);
+				assert.deepEqual(view, {redirect: `/wiki/${title}`});
 			});
 		});
 	});
@@ -381,6 +507,10 @@ describe("wiki.js", function() {
 
 function randomInt() {
 	return 1 + Math.floor(Math.random() * 2147483648);
+}
+
+function clone(object) {
+	return JSON.parse(JSON.stringify(object));
 }
 
 const reverts = [];
