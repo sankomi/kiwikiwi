@@ -98,7 +98,7 @@ async function update(title, newTitle, summary, content) {
 		let contentPatch = getPatch("", content);
 
 		let history = History.build({
-			summary,
+			summary: summary || "create",
 			title: titlePatch,
 			content: contentPatch,
 		});
@@ -144,7 +144,7 @@ async function update(title, newTitle, summary, content) {
 	let contentPatch = getPatch(locked.content, content);
 	let event = locked.histories[0].event + 1;
 	let history = History.build({
-		summary,
+		summary: summary || "edit",
 		event,
 		title: titlePatch,
 		content: contentPatch,
