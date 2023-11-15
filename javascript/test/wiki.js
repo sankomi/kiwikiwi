@@ -15,6 +15,45 @@ describe("wiki.js", function() {
 		});
 	});
 
+	describe("random()", function() {
+		describe("if there are no pages", function() {
+			it("should redirect to default page (kiwikiwi)", async function() {
+				let count = replace(Page, "count", fake(() => 0));
+
+				let view = await wiki.random();
+				assert.equal(count.callCount, 1);
+				assert.equal(view.redirect, "/wiki/kiwikiwi");
+			});
+		});
+
+		describe("if there are pages", function() {
+			let prefix = "randompage";
+			let title = prefix + "title";
+			let content = prefix + "content";
+			let pages = [...Array(25).keys()].map(id => ({
+				id,
+				title: title + String(id),
+				content: content + String(id),
+			}));
+
+			it("should redirect to random page", async function() {
+				let count = replace(Page, "count", fake(() => pages.length));
+				let findOne = replace(Page, "findOne", fake(args => pages[args.offset]));
+
+				let view = await wiki.random();
+				assert.equal(count.callCount, 1);
+				assert.equal(findOne.callCount, 1);
+				let equal = 0;
+				pages.forEach(page => {
+					if (view.redirect === `/wiki/${page.title}`) {
+						equal += 1;
+					}
+				});
+				assert.equal(equal, 1);
+			});
+		});
+	});
+
 	describe("view(title)", function() {
 		describe("if page does not exist", function() {
 			let prefix = "viewnopage"

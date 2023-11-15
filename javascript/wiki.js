@@ -6,6 +6,18 @@ function index() {
 	return {name: "index"};
 }
 
+async function random() {
+	let count = await Page.count();
+
+	if (count > 0) {
+		let index = Math.floor(Math.random() * count);
+		let page = await Page.findOne({offset: index});
+		return {redirect: `/wiki/${page.title}`};
+	} else {
+		return {redirect: "/wiki/kiwikiwi"};
+	}
+}
+
 async function view(title) {
 	const page = await Page.findOne({where: {title}});
 
@@ -166,6 +178,7 @@ function applyPatch(text, patchText) {
 
 module.exports = {
 	index,
+	random,
 	view,
 	editView, editEdit,
 	history,
