@@ -189,6 +189,7 @@ describe("wiki.js", function() {
 				title, content,
 				histories: [...Array(25).keys()].map(i => i + 1)
 					.map(event => ({
+						event,
 						title: historyTitle + String(event),
 						summary: historySummary + String(event),
 						content: historyContent + String(event),
@@ -299,6 +300,82 @@ describe("wiki.js", function() {
 				let view = await wiki.history(title, current);
 				assert.equal(findOne.callCount, 1);
 				assert.deepEqual(view, {redirect: `/wiki/${title}`});
+			});
+		});
+	});
+
+	describe("make(title, event)", function() {
+		let make = wiki.__get__("make");
+
+		describe("if page does not exist", function() {
+			it("should return null", async function() {
+				let prefix = "makenopage";
+				let event = randomInt(25);
+				let title = prefix + "title";
+				let findOne = replace(Page, "findOne", fake(() => null));
+
+				let back = await make(title, event);
+				assert.equal(findOne.callCount, 1);
+				assert.equal(back, null);
+			});
+		});
+
+		describe("if history does not exist", function() {
+			it("should return null", async function() {
+				let prefix = "makenohistory";
+				let event = randomInt(25);
+				let title = prefix + "title";
+				let content = prefix + "content";
+				let page = {title, content};
+				let pageFindOne = replace(Page, "findOne", fake(() => page));
+				let historyFindOne = replace(History, "findOne", fake(() => null));
+
+				let back = await make(title, event);
+				assert.equal(pageFindOne.callCount, 1);
+				assert.equal(historyFindOne.callCount, 1);
+				assert.equal(back, null);
+			});
+		});
+
+		describe("if page and histories exist", function() {
+			it("should return old page", async function() {
+				let prefix = "makenohistory";
+				let id = randomInt(50);
+				let event = 15;
+				let title = prefix + "title";
+				let content = prefix + "content";
+				let historyTitle = prefix + "historytitle";
+				let historySummary = prefix + "historysummary";
+				let historyContent = prefix + "historycontent";
+				let page = {
+					id, title, content,
+					histories: [...Array(25).keys()].map(i => i + 1)
+						.map(event => ({
+							event,
+							title: historyTitle + String(event),
+							summary: historySummary + String(event),
+							content: historyContent + String(event),
+						})),
+				};
+				let pageFindOne = replace(Page, "findOne", fake(() => page));
+				let historyFindOne = replace(History, "findOne", fake(args => {
+					if (args.where.pageId !== page.id) return null;
+					let event = args.where.event;
+					return {
+						title: historyTitle + String(event),
+						summary: historySummary + String(event),
+						content: historyContent + String(event),
+						event: args.where.event,
+					};
+				}));
+				let applyPatch = wireFunc(wiki, "applyPatch", (text1, text2) => text2 + "patched");
+				let pageBuild = replace(Page, "build", fake(args => ({...args})));
+
+				let back = await make(title, event);
+				[pageFindOne, historyFindOne, pageBuild].forEach(func => assert.equal(func.callCount, 1));
+				assert.equal(applyPatch.callCount, 2 * event);
+				assert.equal(back.title, historyTitle + String(event) + "patched");
+				assert.equal(back.content, historyContent + String(event) + "patched");
 			});
 		});
 	});
@@ -544,8 +621,8 @@ describe("wiki.js", function() {
 	});
 });
 
-function randomInt() {
-	return 1 + Math.floor(Math.random() * 2147483648);
+function randomInt(max = 2147483648) {
+	return 1 + Math.floor(Math.random() * max);
 }
 
 function clone(object) {

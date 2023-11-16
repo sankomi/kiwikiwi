@@ -79,6 +79,35 @@ async function history(title, current = 1) {
 	}
 }
 
+async function make(title, event) {
+	let page = await Page.findOne({
+		where: {title},
+		include: [History],
+		order: [[History, "event", "ASC"]],
+	});
+
+	if (page === null) {
+		return null;
+	}
+
+	let history = await History.findOne({where: {event, pageId: page.id}});
+
+	if (history === null) {
+		return null;
+	}
+
+	backTitle = "";
+	backContent = "";
+
+	for (let history of page.histories) {
+		if (history.event > event) break;
+		backTitle = applyPatch(backTitle, history.title);
+		backContent = applyPatch(backContent, history.content);
+	}
+
+	return Page.build({title: backTitle, content: backContent});
+}
+
 async function update(title, newTitle, summary, content) {
 	let page = await Page.findOne({where: {title}});
 
