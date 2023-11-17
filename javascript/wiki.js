@@ -79,6 +79,17 @@ async function history(title, current = 1) {
 	}
 }
 
+async function back(title, event) {
+	let back = await make(title, event);
+
+	if (back === null) {
+		return {redirect: `/wiki/history/${title}`};
+	} else {
+		back.event = event;
+		return {name: "back", data: {page: back}};
+	}
+}
+
 async function make(title, event) {
 	let page = await Page.findOne({
 		where: {title},
@@ -202,7 +213,7 @@ function applyPatch(text, patchText) {
 	let dmp = new DiffMatchPatch();
 	let patch = dmp.patch_fromText(patchText);
 	let newText = dmp.patch_apply(patch, text);
-	return newText;
+	return newText[0];
 }
 
 module.exports = {
@@ -210,5 +221,5 @@ module.exports = {
 	random,
 	view,
 	editView, editEdit,
-	history,
+	history, back,
 }

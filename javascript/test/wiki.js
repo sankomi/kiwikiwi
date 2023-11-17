@@ -304,6 +304,39 @@ describe("wiki.js", function() {
 		});
 	});
 
+	describe("back(title, event)", function() {
+		describe("if page cannot be made", function() {
+			let prefix = "backnopage";
+			let event = randomInt(25);
+			let title = prefix + "title";
+
+			it("should redirect to history page", async function() {
+				let make = wireFunc(wiki, "make", (title, event) => null);
+
+				let view = await wiki.back(title, event);
+				assert.equal(make.callCount, 1);
+				assert.equal(view.redirect, `/wiki/history/${title}`);
+			});
+		});
+
+		describe("if page can be made", function() {
+			let prefix = "backpage";
+			let event = randomInt(25);
+			let title = prefix + "title";
+			let content = prefix + "content";
+			let page = {title, content};
+
+			it("should render edit view with page", async function() {
+				let make = wireFunc(wiki, "make", (title, event) => page);
+
+				let view = await wiki.back(title, event);
+				assert.equal(make.callCount, 1);
+				assert.equal(view.name, "back");
+				assert.deepEqual(view.data.page, {...page, event});
+			});
+		});
+	});
+
 	describe("make(title, event)", function() {
 		let make = wiki.__get__("make");
 

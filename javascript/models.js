@@ -70,8 +70,9 @@ const History = sqlite.define(
 			type: Sequelize.INTEGER,
 			defaultValue: 1,
 		},
-		page_id: {
+		pageId: {
 			type: Sequelize.INTEGER,
+			field: "page_id",
 		},
 		summary: {
 			type: Sequelize.STRING(100),
