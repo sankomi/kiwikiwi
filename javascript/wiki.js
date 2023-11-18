@@ -90,6 +90,46 @@ async function back(title, event) {
 	}
 }
 
+async function diff(title, event) {
+	let page = await Page.findOne({where: {title}});
+
+	if (page === null) {
+		return {redirect: `/wiki/${title}`};
+	}
+
+	let history = await History.findOne({where: {event, pageId: page.id}});
+
+	if (history === null) {
+		return {redirect: `/history/${title}`};
+	}
+
+	let titleDiff = history.title || "";
+	titleDiff = titleDiff.replace(/\n\+([^\n]*)/g, "\n##ins##+$1##/ins##");
+	titleDiff = titleDiff.replace(/\n\-([^\n]*)/g, "\n##del##+$1##/del##");
+	titleDiff = titleDiff.replace(/@@\s\-\d+,{0,1}\d*\s\+\d+,{0,1}\d*\s@@\n{0,1}/g, "");
+	titleDiff = escapeHtml(titleDiff);
+	titleDiff = titleDiff.replace(/##(ins|\/ins|del|\/del)##/g, "<$1>");
+
+	let contentDiff = history.content || "";
+	contentDiff = contentDiff.replace(/\n\+([^\n]*)/g, "\n##ins##+$1##/ins##");
+	contentDiff = contentDiff.replace(/\n\-([^\n]*)/g, "\n##del##+$1##/del##");
+	contentDiff = contentDiff.replace(/@@\s\-\d+,{0,1}\d*\s\+\d+,{0,1}\d*\s@@\n{0,1}/g, "");
+	contentDiff = escapeHtml(contentDiff);
+	contentDiff = contentDiff.replace(/##(ins|\/ins|del|\/del)##/g, "<$1>");
+
+	page.event = event;
+	page.titleDiff = titleDiff;
+	page.contentDiff = contentDiff;
+	return {name: "diff", data: {page}};
+}
+
+function escapeHtml(text) {
+	return text.replace(/&/g, "&amp;")
+		.replace(/</g, "&lt;")
+		.replace(/>/g, "&gt;")
+		.replace(/"/g, "&quot;")
+		.replace(/'/g, "&#39;");
+}
 async function make(title, event) {
 	let page = await Page.findOne({
 		where: {title},
@@ -221,5 +261,5 @@ module.exports = {
 	random,
 	view,
 	editView, editEdit,
-	history, back,
+	history, back, diff,
 }

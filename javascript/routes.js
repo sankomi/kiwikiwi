@@ -54,6 +54,14 @@ router.get("/back/:title/:event", async (req, res) => {
 	render(res, view);
 });
 
+router.get("/diff/:title/:event", async (req, res) => {
+	let title = req.params.title;
+	let event = req.params.event;
+
+	let view = await wiki.diff(title, event);
+	render(res, view);
+});
+
 function render(res, view) {
 	if (view.redirect) {
 		res.redirect(view.redirect);

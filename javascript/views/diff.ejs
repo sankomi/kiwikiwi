@@ -7,7 +7,7 @@
 
 		<link rel="stylesheet" href="/style.css">
 
-		<title>back(<%= page.title %>, <%= page.event %>);</title>
+		<title>diff(<%= page.title %>, <%= page.event %>);</title>
 	</head>
 	<body>
 		<div class="lang lang--javascript">javascript</div>
@@ -15,14 +15,27 @@
 			<input id="s" name="s" value="">
 			<button>search</button>
 		</form>
-		<h1>back(<a href="/wiki/<%= page.title %>"><%= page.title %></a>, <%= page.event %>);</h1>
+		<h1>diff(<a href="/wiki/<%= page.title %>"><%= page.title %></a>, <%= page.event %>);</h1>
 		<nav>
 			<a href="/edit/<%= page.title %>">edit</a>
 			<a href="/history/<%= page.title %>">history</a>
+			<a href="/back/<%= page.title %>/<%= page.event %>">view</a>
 			<a href="/rehash/<%= page.title %>/<%= page.event %>">rehash</a>
 		</nav>
 		<div>
-			<%- page.html %>
+			<h2>title</h2>
+			<% if (page.titleDiff) { %>
+			<pre class="diff"><%- page.titleDiff %></pre>
+			<% } else { %>
+			<pre>no change</pre>
+			<% } %>
+
+			<h2>content</h2>
+			<% if (page.contentDiff) { %>
+			<pre class="diff"><%- page.contentDiff %></pre>
+			<% } else { %>
+			<pre>no change</pre>
+			<% } %>
 		</div>
 	</body>
 </html>
