@@ -103,19 +103,8 @@ async function diff(title, event) {
 		return {redirect: `/history/${title}`};
 	}
 
-	let titleDiff = history.title || "";
-	titleDiff = titleDiff.replace(/\n\+([^\n]*)/g, "\n##ins##+$1##/ins##");
-	titleDiff = titleDiff.replace(/\n\-([^\n]*)/g, "\n##del##+$1##/del##");
-	titleDiff = titleDiff.replace(/@@\s\-\d+,{0,1}\d*\s\+\d+,{0,1}\d*\s@@\n{0,1}/g, "");
-	titleDiff = escapeHtml(titleDiff);
-	titleDiff = titleDiff.replace(/##(ins|\/ins|del|\/del)##/g, "<$1>");
-
-	let contentDiff = history.content || "";
-	contentDiff = contentDiff.replace(/\n\+([^\n]*)/g, "\n##ins##+$1##/ins##");
-	contentDiff = contentDiff.replace(/\n\-([^\n]*)/g, "\n##del##+$1##/del##");
-	contentDiff = contentDiff.replace(/@@\s\-\d+,{0,1}\d*\s\+\d+,{0,1}\d*\s@@\n{0,1}/g, "");
-	contentDiff = escapeHtml(contentDiff);
-	contentDiff = contentDiff.replace(/##(ins|\/ins|del|\/del)##/g, "<$1>");
+	let titleDiff = formatDiff(history.title || "");
+	let contentDiff = formatDiff(history.content || "");
 
 	page.event = event;
 	page.titleDiff = titleDiff;
@@ -123,13 +112,18 @@ async function diff(title, event) {
 	return {name: "diff", data: {page}};
 }
 
-function escapeHtml(text) {
-	return text.replace(/&/g, "&amp;")
+function formatDiff(diff) {
+	diff = diff.replace(/\n\+([^\n]*)/g, "\n##ins##+$1##/ins##");
+	diff = diff.replace(/\n\-([^\n]*)/g, "\n##del##+$1##/del##");
+	diff = diff.replace(/@@\s\-\d+,{0,1}\d*\s\+\d+,{0,1}\d*\s@@\n{0,1}/g, "");
+	diff = diff.replace(/&/g, "&amp;")
 		.replace(/</g, "&lt;")
 		.replace(/>/g, "&gt;")
 		.replace(/"/g, "&quot;")
 		.replace(/'/g, "&#39;");
+	return diff.replace(/##(ins|\/ins|del|\/del)##/g, "<$1>");
 }
+
 async function make(title, event) {
 	let page = await Page.findOne({
 		where: {title},

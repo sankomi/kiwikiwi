@@ -337,14 +337,99 @@ describe("wiki.js", function() {
 		});
 	});
 
+	describe("diff(title, event)", function() {
+		describe("if page does not exist", function() {
+			let prefix = "diffnopage";
+			let event = randomInt(25);
+			let title = prefix + "title";
+
+			it("should redirect to view page", async function() {
+				let findOne = replace(Page, "findOne", fake(() => null));
+
+				let view = await wiki.diff(title, event);
+				assert.equal(findOne.callCount, 1);
+				assert.equal(view.redirect, `/wiki/${title}`);
+			});
+		});
+
+		describe("if history does not exist", function() {
+			let prefix = "diffnohistory";
+			let event = randomInt(25);
+			let id = randomInt(50);
+			let title = prefix + "title";
+			let content = prefix + "content";
+			let page = {id, title, content};
+
+			it("should redirect to history page", async function() {
+				let pageFindOne = replace(Page, "findOne", fake(() => page));
+				let historyFindOne = replace(History, "findOne", fake(() => null));
+
+				let view = await wiki.diff(title, event);
+				assert.equal(pageFindOne.callCount, 1);
+				assert.equal(historyFindOne.callCount, 1);
+				assert.equal(view.redirect, `/history/${title}`);
+			});
+		});
+
+		describe("if page and history exist", function() {
+			let prefix = "diff";
+			let event = randomInt(25);
+			let id = randomInt(50);
+			let title = prefix + "title";
+			let content = prefix + "content";
+			let page = {id, title, content};
+			let historyTitle = prefix + "historytitle";
+			let historySummary = prefix + "historysummary";
+			let historyContent = prefix + "historycontent";
+			let history = {
+				title: historyTitle,
+				summary: historySummary,
+				content: historyContent,
+			};
+			let titleDiff = prefix + "titlediff";
+			let contentDiff = prefix + "contentdiff";
+
+			it("should return title and content diffs", async function() {
+				let pageFindOne = replace(Page, "findOne", fake(() => page));
+				let historyFindOne = replace(History, "findOne", fake(args => {
+					let where = args.where;
+					if (where.event === event && where.pageId === id) {
+						return history;
+					} else {
+						return null;
+					}
+				}));
+				let formatDiff = wireFunc(wiki, "formatDiff", diff => {
+					switch(diff) {
+						case historyTitle:
+							return titleDiff;
+						case historyContent:
+							return contentDiff;
+					}
+				});
+
+				let view = await wiki.diff(title, event);
+				assert.equal(pageFindOne.callCount, 1);
+				assert.equal(historyFindOne.callCount, 1);
+				assert.equal(formatDiff.callCount, 2);
+				assert.equal(view.name, "diff");
+				assert.equal(view.data.page.title, title);
+				assert.equal(view.data.page.event, event);
+				assert.equal(view.data.page.titleDiff, titleDiff);
+				assert.equal(view.data.page.contentDiff, contentDiff);
+			});
+		});
+	});
+
 	describe("make(title, event)", function() {
 		let make = wiki.__get__("make");
 
 		describe("if page does not exist", function() {
+			let prefix = "makenopage";
+			let event = randomInt(25);
+			let title = prefix + "title";
+
 			it("should return null", async function() {
-				let prefix = "makenopage";
-				let event = randomInt(25);
-				let title = prefix + "title";
 				let findOne = replace(Page, "findOne", fake(() => null));
 
 				let back = await make(title, event);
@@ -354,12 +439,13 @@ describe("wiki.js", function() {
 		});
 
 		describe("if history does not exist", function() {
+			let prefix = "makenohistory";
+			let event = randomInt(25);
+			let title = prefix + "title";
+			let content = prefix + "content";
+			let page = {title, content};
+
 			it("should return null", async function() {
-				let prefix = "makenohistory";
-				let event = randomInt(25);
-				let title = prefix + "title";
-				let content = prefix + "content";
-				let page = {title, content};
 				let pageFindOne = replace(Page, "findOne", fake(() => page));
 				let historyFindOne = replace(History, "findOne", fake(() => null));
 
@@ -371,15 +457,16 @@ describe("wiki.js", function() {
 		});
 
 		describe("if page and histories exist", function() {
+			let prefix = "make";
+			let id = randomInt(50);
+			let event = 15;
+			let title = prefix + "title";
+			let content = prefix + "content";
+			let historyTitle = prefix + "historytitle";
+			let historySummary = prefix + "historysummary";
+			let historyContent = prefix + "historycontent";
+
 			it("should return old page", async function() {
-				let prefix = "makenohistory";
-				let id = randomInt(50);
-				let event = 15;
-				let title = prefix + "title";
-				let content = prefix + "content";
-				let historyTitle = prefix + "historytitle";
-				let historySummary = prefix + "historysummary";
-				let historyContent = prefix + "historycontent";
 				let page = {
 					id, title, content,
 					histories: [...Array(25).keys()].map(i => i + 1)
