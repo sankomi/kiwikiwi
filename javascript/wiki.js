@@ -116,6 +116,8 @@ function formatDiff(diff) {
 	diff = diff.replace(/\n\+([^\n]*)/g, "\n##ins##+$1##/ins##");
 	diff = diff.replace(/\n\-([^\n]*)/g, "\n##del##+$1##/del##");
 	diff = diff.replace(/@@\s\-\d+,{0,1}\d*\s\+\d+,{0,1}\d*\s@@\n{0,1}/g, "");
+	diff = diff.replace(/(%0D)*%0A/g, "%0A ");
+	diff = decodeURI(diff);
 	diff = diff.replace(/&/g, "&amp;")
 		.replace(/</g, "&lt;")
 		.replace(/>/g, "&gt;")
