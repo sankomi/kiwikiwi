@@ -28,7 +28,12 @@ const Page = sqlite.define(
 		content: {
 			type: Sequelize.TEXT,
 			set(value) {
-				let html = marked.parse(value);
+				let escaped = value.replace(/&/g, "&amp;")
+					.replace(/</g, "&lt;")
+					.replace(/>/g, "&gt;")
+					.replace(/"/g, "&quot;")
+					.replace(/'/g, "&#39;");
+				let html = marked.parse(escaped);
 				let soup = new JSSoup(html);
 				let text = soup.text;
 				this.setDataValue("content", value);
