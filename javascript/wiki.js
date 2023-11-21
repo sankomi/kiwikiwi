@@ -126,6 +126,26 @@ function formatDiff(diff) {
 	return diff.replace(/##(ins|\/ins|del|\/del)##/g, "<$1>");
 }
 
+async function rehash(title, event) {
+	let back = await make(title, event);
+
+	if (back === null) {
+		return {redirect: `/wiki/${title}`};
+	}
+
+	try {
+		updated = await update(title, back.title, `rehash(${event})`, back.content);
+	} catch (err) {
+		if (err instanceof TitleDuplicateError || err instanceof PageLockError) {
+			return {redirect: `/back/${title}/${event}`};
+		} else {
+			throw err;
+		}
+	}
+
+	return {redirect: `/wiki/${updated.title}`};
+}
+
 async function make(title, event) {
 	let page = await Page.findOne({
 		where: {title},
@@ -257,5 +277,5 @@ module.exports = {
 	random,
 	view,
 	editView, editEdit,
-	history, back, diff,
+	history, back, diff, rehash,
 }

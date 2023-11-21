@@ -421,6 +421,66 @@ describe("wiki.js", function() {
 		});
 	});
 
+	describe("rehash(title, event)", function() {
+		describe("if page cannot be made", function() {
+			let prefix = "rehashnopage";
+			let event = randomInt(50);
+			let title = prefix + "title";
+
+			it("should redirect to view page", async function() {
+				let make = wireFunc(wiki, "make", (title, event) => null);
+
+				let view = await wiki.rehash(title, event);
+				assert.equal(make.callCount, 1);
+				assert.equal(view.redirect, `/wiki/${title}`);
+			});
+		});
+
+		describe("if page can be made", function() {
+			describe("and page cannot be updated", function() {
+				let prefix = "rehashnoupdate";
+				let event = randomInt(50);
+				let title = prefix + "title";
+				let newTitle = prefix + "newtitle";
+				let content = prefix + "content";
+				let back = {newTitle, content};
+
+				it("should redirect to back page", async function() {
+					let make = wireFunc(wiki, "make", (title, event) => back);
+					let update = randomInt(2) > 1?
+						wireError(wiki, "update", PageLockError, "page is locked"):
+						wireError(wiki, "update", TitleDuplicateError, "page with new title already exists");
+
+					let view = await wiki.rehash(title, event);
+					assert.equal(make.callCount, 1);
+					assert.equal(update.callCount, 1);
+					assert.equal(view.redirect, `/back/${title}/${event}`);
+				});
+			});
+
+			describe("and page can be updated", function() {
+				let prefix = "rehash";
+				let event = randomInt(50);
+				let title = prefix + "title";
+				let newTitle = prefix + "newtitle";
+				let summary = prefix + "summary";
+				let content = prefix + "content";
+				let back = {title: newTitle, summary, content};
+
+				it("should redirect to new view page", async function() {
+					let make = wireFunc(wiki, "make", (title, event) => back);
+					let update = wireFunc(wiki, "update", args => back);
+
+					let view = await wiki.rehash(title, event);
+					assert.equal(make.callCount, 1);
+					assert.equal(update.callCount, 1);
+					assert.deepEqual(update.getCall(0).args, [title, newTitle, `rehash(${event})`, content]);
+					assert.equal(view.redirect, `/wiki/${newTitle}`);
+				});
+			});
+		});
+	});
+
 	describe("make(title, event)", function() {
 		let make = wiki.__get__("make");
 
