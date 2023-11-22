@@ -54,6 +54,67 @@ describe("wiki.js", function() {
 		});
 	});
 
+	describe("search(string, current)", function() {
+		describe("if search string is empty", function() {
+			let emptyStrings = [null, "", "    "];
+			let current = randomInt(10);
+			let string = emptyStrings[randomInt(emptyStrings.length) - 1];
+
+			it("should return search view with no pages", async function() {
+				let view = await wiki.search(string, current);
+				assert.equal(view.name, "search");
+				assert.equal(view.data.string, "");
+				assert.equal(view.data.pages, null);
+			});
+		})
+
+		describe("if search has no results", function() {
+			let string = "searchnoresult ";
+			let current = randomInt(10);
+
+			it("should return search view with no results", async function() {
+				let findAll = replace(Page, "findAll", fake(args => []));
+
+				let view = await wiki.search(string, current);
+				assert.equal(findAll.callCount, 1);
+				assert.equal(view.name, "search");
+				assert.equal(view.data.string, string.trim());
+				assert.equal(view.data.current, current);
+				assert.equal(view.data.last, 0);
+				assert.deepEqual(view.data.pages, []);
+			});
+		});
+
+		describe("if search has results", function() {
+			let string = "search ";
+			let prefix = "search";
+			let title = prefix + "title";
+			let content = prefix + "content";
+			let pages = [...Array(25).keys()].map(id => ({
+				id,
+				title: title + String(id),
+				content: content + String(id),
+			}));
+
+			it("should return search view with results", async function() {
+				let findAll = replace(Page, "findAll", fake(args => pages));
+
+				let views = [null];
+				for (let i = 1; i <= 3; i++) {
+					views.push(await wiki.search(string, i));
+				}
+				assert.equal(findAll.callCount, 3);
+				for (let i = 1; i <= 3; i++) {
+					assert.equal(views[i].name, "search");
+					assert.equal(views[i].data.string, string.trim());
+					assert.equal(views[i].data.current, i);
+					assert.equal(views[i].data.last, 3);
+					assert.deepEqual(views[i].data.pages, pages.slice((i - 1) * 10, i * 10));
+				}
+			});
+		});
+	});
+
 	describe("view(title)", function() {
 		describe("if page does not exist", function() {
 			let prefix = "viewnopage"

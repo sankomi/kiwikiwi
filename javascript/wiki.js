@@ -1,3 +1,5 @@
+const {Op} = require("sequelize");
+
 const {Page, History} = require("./models");
 const {TitleDuplicateError, PageLockError} = require("./error");
 const DiffMatchPatch = require("diff-match-patch");
@@ -16,6 +18,30 @@ async function random() {
 	} else {
 		return {redirect: "/wiki/kiwikiwi"};
 	}
+}
+
+async function search(string, current) {
+	if (!string || string.trim() === "") {
+		return {name: "search", data: {string: "", pages: null}};
+	}
+	string = string.trim();
+
+	current = +current;
+	if (!current || current <= 0) {
+		current = 1;
+	}
+
+	let pages = Page.findAll({
+		where: {
+			[Op.or]: [
+				{title: {[Op.like]: `%${string}%`}},
+				{text: {[Op.like]: `%${string}%`}},
+			],
+		},
+	});
+	let last = Math.ceil(pages.length / 10);
+	let show = pages.slice((current - 1) * 10, current * 10);
+	return {name: "search", data: {string, current, last, pages: show}};
 }
 
 async function view(title) {
@@ -275,6 +301,7 @@ function applyPatch(text, patchText) {
 module.exports = {
 	index,
 	random,
+	search,
 	view,
 	editView, editEdit,
 	history, back, diff, rehash,
