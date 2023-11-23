@@ -31,7 +31,7 @@ async function search(string, current) {
 		current = 1;
 	}
 
-	let pages = Page.findAll({
+	let pages = await Page.findAll({
 		where: {
 			[Op.or]: [
 				{title: {[Op.like]: `%${string}%`}},

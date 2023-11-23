@@ -35,12 +35,12 @@
 			</ul>
 			<div>
 				<% if (page.current > 1 && page.current <= page.last) { %>
-				<a href="/history/<%= page.title %>/<% page.current - 1 %>">prev</a>
+				<a href="/history/<%= page.title %>/<%= page.current - 1 %>">prev</a>
 				<% } else { %>
 				<span><del>prev</del></span>
 				<% } %>
 				<% if (page.current >= 0 && page.current < page.last) { %>
-				<a href="/history/<%= page.title %>/<% page.current + 1 %>">next</a>
+				<a href="/history/<%= page.title %>/<%= page.current + 1 %>">next</a>
 				<% } else { %>
 				<span><del>next</del></span>
 				<% } %>

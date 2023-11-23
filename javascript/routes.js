@@ -11,6 +11,14 @@ router.get("/", (req, res) => {
 	render(res, view);
 });
 
+router.get("/search", async (req, res) => {
+	let string = req.query.s || "";
+	let current = req.query.p;
+
+	let view = await wiki.search(string, current);
+	render(res, view);
+});
+
 router.get("/wiki", async (req, res) => {
 	let view = await wiki.random();
 	render(res, view);
