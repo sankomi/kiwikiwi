@@ -15,10 +15,10 @@
 			<input id="s" name="s" value="">
 			<button>search</button>
 		</form>
-		<h1>history(<a href="/wiki/<%= page.title %>"><%= page.title %></a>, <%= page.current %>);</h1>
+		<h1>history(<a href="/wiki/<%= encodeURI(page.title) %>"><%= page.title %></a>, <%= page.current %>);</h1>
 		<nav>
-			<a href="/edit/<%= page.title %>">edit</a>
-			<a href="/history/<%= page.title %>">history</a>
+			<a href="/edit/<%= encodeURI(page.title) %>">edit</a>
+			<a href="/history/<%= encodeURI(page.title) %>">history</a>
 		</nav>
 		<div>
 			<ul>
@@ -26,21 +26,21 @@
 				<li>
 					<p><%= history.summary %> - <%= history.write %></p>
 					<div>
-						<a href="/back/<%= page.title %>/<%= history.event %>">view</a>
-						<a href="/diff/<%= page.title %>/<%= history.event %>">diff</a>
-						<a href="/rehash/<%= page.title %>/<%= history.event %>">rehash</a>
+						<a href="/back/<%= encodeURI(page.title) %>/<%= history.event %>">view</a>
+						<a href="/diff/<%= encodeURI(page.title) %>/<%= history.event %>">diff</a>
+						<a href="/rehash/<%= encodeURI(page.title) %>/<%= history.event %>">rehash</a>
 					</div>
 				</li>
 				<% } %>
 			</ul>
 			<div>
 				<% if (page.current > 1 && page.current <= page.last) { %>
-				<a href="/history/<%= page.title %>/<%= page.current - 1 %>">prev</a>
+				<a href="/history/<%= encodeURI(page.title) %>/<%= page.current - 1 %>">prev</a>
 				<% } else { %>
 				<span><del>prev</del></span>
 				<% } %>
 				<% if (page.current >= 0 && page.current < page.last) { %>
-				<a href="/history/<%= page.title %>/<%= page.current + 1 %>">next</a>
+				<a href="/history/<%= encodeURI(page.title) %>/<%= page.current + 1 %>">next</a>
 				<% } else { %>
 				<span><del>next</del></span>
 				<% } %>

@@ -15,10 +15,10 @@
 			<input id="s" name="s" value="">
 			<button>search</button>
 		</form>
-		<h1>edit(<a href="/wiki/<%= page.title %>"><%= page.title %></a>);</h1>
+		<h1>edit(<a href="/wiki/<%= encodeURI(page.title) %>"><%= page.title %></a>);</h1>
 		<nav>
-			<a href="/edit/<%= page.title %>">edit</a>
-			<a href="/history/<%= page.title %>">history</a>
+			<a href="/edit/<%= encodeURI(page.title) %>">edit</a>
+			<a href="/history/<%= encodeURI(page.title) %>">history</a>
 		</nav>
 		<div>
 			<form method="post" class="edit">
@@ -28,7 +28,7 @@
 				</div>
 				<div>
 					<label for="summary">summary</label>
-					<input id="summary" name="summary" value="<% page.summary? page.summary: '' %>">
+					<input id="summary" name="summary" value="<%= page.summary? page.summary: '' %>">
 				</div>
 				<div>
 					<label for="content">content</label>

@@ -102,6 +102,9 @@ const History = sqlite.define(
 Page.hasMany(History, {foreignKey: "page_id"});
 History.belongsTo(Page, {foreignKey: "page_id"});
 
+Page.sync();
+History.sync();
+
 module.exports= {
 	Page, History,
 };

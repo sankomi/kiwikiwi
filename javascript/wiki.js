@@ -4,6 +4,8 @@ const {Page, History} = require("./models");
 const {TitleDuplicateError, PageLockError} = require("./error");
 const DiffMatchPatch = require("diff-match-patch");
 
+const TITLE_REGEX = /[\(\)\[\]\n\r*_`/\\]/g;
+
 function index() {
 	return {name: "index"};
 }
@@ -48,6 +50,9 @@ async function view(title) {
 	const page = await Page.findOne({where: {title}});
 
 	if (page === null) {
+		if (title.match(TITLE_REGEX)) {
+			return null;
+		}
 		return {name: "not-exist", data: {page: {title}}};
 	} else {
 		return {name: "view", data: {page}};
@@ -58,6 +63,9 @@ async function editView(title) {
 	const page = await Page.findOne({where: {title}});
 
 	if (page === null) {
+		if (title.match(TITLE_REGEX)) {
+			return null;
+		}
 		const emptyPage = Page.build({title});
 		emptyPage.newTitle = title;
 		return {name: "edit", data: {page: emptyPage}};
@@ -68,6 +76,14 @@ async function editView(title) {
 }
 
 async function editEdit(title, newTitle, summary, content) {
+	if (newTitle.match(TITLE_REGEX)) {
+		newTitle = newTitle.replace(TITLE_REGEX, "");
+		let page = Page.build({title, content});
+		page.newTitle = newTitle;
+		page.summary = summary;
+		return {name: "edit", data: {page}};
+	}
+
 	let updated;
 	try {
 		updated = await update(title, newTitle, summary, content);
@@ -92,6 +108,9 @@ async function history(title, current = 1) {
 	});
 
 	if (page === null) {
+		if (title.match(TITLE_REGEX)) {
+			return null;
+		}
 		return {redirect: `/wiki/${title}`};
 	} else {
 		last = Math.ceil(page.histories.length / 10);
@@ -109,6 +128,9 @@ async function back(title, event) {
 	let back = await make(title, event);
 
 	if (back === null) {
+		if (title.match(TITLE_REGEX)) {
+			return null;
+		}
 		return {redirect: `/wiki/history/${title}`};
 	} else {
 		back.event = event;
@@ -120,6 +142,9 @@ async function diff(title, event) {
 	let page = await Page.findOne({where: {title}});
 
 	if (page === null) {
+		if (title.match(TITLE_REGEX)) {
+			return null;
+		}
 		return {redirect: `/wiki/${title}`};
 	}
 
@@ -140,7 +165,7 @@ async function diff(title, event) {
 
 function formatDiff(diff) {
 	diff = diff.replace(/\n\+([^\n]*)/g, "\n##ins##+$1##/ins##");
-	diff = diff.replace(/\n\-([^\n]*)/g, "\n##del##+$1##/del##");
+	diff = diff.replace(/\n\-([^\n]*)/g, "\n##del##-$1##/del##");
 	diff = diff.replace(/@@\s\-\d+,{0,1}\d*\s\+\d+,{0,1}\d*\s@@\n{0,1}/g, "");
 	diff = diff.replace(/(%0D)*%0A/g, "%0A ");
 	diff = decodeURI(diff);
@@ -156,6 +181,9 @@ async function rehash(title, event) {
 	let back = await make(title, event);
 
 	if (back === null) {
+		if (title.match(TITLE_REGEX)) {
+			return null;
+		}
 		return {redirect: `/wiki/${title}`};
 	}
 

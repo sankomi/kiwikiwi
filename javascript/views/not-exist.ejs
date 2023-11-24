@@ -17,9 +17,9 @@
 		</form>
 		<h1><%= page.title %></h1>
 		<nav>
-			<a href="/edit/<%= page.title %>">edit</a>
-			<a href="/history/<% page.title %>">history</a>
+			<a href="/edit/<%= encodeURI(page.title) %>">edit</a>
+			<a href="/history/<% encodeURI(page.title) %>">history</a>
 		</nav>
-		<p>page does not exist! <a href="/edit/<%= page.title %>">create</a></p>
+		<p>page does not exist! <a href="/edit/<%= encodeURI(page.title) %>">create</a></p>
 	</body>
 </html>

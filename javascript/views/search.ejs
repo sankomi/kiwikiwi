@@ -29,7 +29,7 @@
 			<% for (let page of pages) { %>
 			<li>
 				<h2>
-					<a href="/wiki/<%= page.title %>"><%= page.title %></a>
+					<a href="/wiki/<%= encodeURI(page.title) %>"><%= page.title %></a>
 				</h2>
 				<% if (page.text.length > 100) { %>
 				<p><%= page.text.substring(0, 100) %>...</p>

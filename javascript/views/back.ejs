@@ -15,11 +15,11 @@
 			<input id="s" name="s" value="">
 			<button>search</button>
 		</form>
-		<h1>back(<a href="/wiki/<%= page.title %>"><%= page.title %></a>, <%= page.event %>);</h1>
+		<h1>back(<a href="/wiki/<%= encodeURI(page.title) %>"><%= page.title %></a>, <%= page.event %>);</h1>
 		<nav>
-			<a href="/edit/<%= page.title %>">edit</a>
-			<a href="/history/<%= page.title %>">history</a>
-			<a href="/rehash/<%= page.title %>/<%= page.event %>">rehash</a>
+			<a href="/edit/<%= encodeURI(page.title) %>">edit</a>
+			<a href="/history/<%= encodeURI(page.title) %>">history</a>
+			<a href="/rehash/<%= encodeURI(page.title) %>/<%= page.event %>">rehash</a>
 		</nav>
 		<div>
 			<%- page.html %>

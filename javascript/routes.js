@@ -79,7 +79,9 @@ router.get("/rehash/:title/:event", async (req, res) => {
 });
 
 function render(res, view) {
-	if (view.redirect) {
+	if (view === null) {
+		res.sendStatus(404);
+	} else if (view.redirect) {
 		res.redirect(view.redirect);
 	} else {
 		res.render(view.name, view.data);
