@@ -12,6 +12,8 @@ const sqlite = new Sequelize(
 	},
 );
 
+const LINK_REGEX = /\[\[([^()\[\]\n\r*_`\/\\]*)\]\]/g;
+
 const Page = sqlite.define(
 	"page",
 	{
@@ -33,7 +35,11 @@ const Page = sqlite.define(
 					.replace(/>/g, "&gt;")
 					.replace(/"/g, "&quot;")
 					.replace(/'/g, "&#39;");
-				let html = marked.parse(escaped);
+				let linked = escaped.replace(LINK_REGEX, string => {
+					let title = string.substring(2, string.length - 2);
+					return string.replace(LINK_REGEX, `[${title}](/wiki/${encodeURI(title)})`);
+				});
+				let html = marked.parse(linked);
 				let soup = new JSSoup(html);
 				let text = soup.text;
 				this.setDataValue("content", value);
