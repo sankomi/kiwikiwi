@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<meta name="robots" content="noindex">
+
+		<link rel="stylesheet" href="/style.css">
+
+		<title>edit(<%= page.title %>);</title>
+	</head>
+	<body>
+		<div class="lang lang--javascript">javascript</div>
+		<form action="/search" method="get">
+			<input id="s" name="s" value="">
+			<button>search</button>
+		</form>
+		<h1>edit(<a href="/wiki/<%= encodeURI(page.title) %>"><%= page.title %></a>);</h1>
+		<nav>
+			<a href="/edit/<%= encodeURI(page.title) %>">edit</a>
+			<a href="/history/<%= encodeURI(page.title) %>">history</a>
+		</nav>
+		<div>
+			<form method="post" class="edit">
+				<div>
+					<label for="title">title</label>
+					<input id="title" name="title" value="<%= page.newTitle %>">
+				</div>
+				<div>
+					<label for="summary">summary</label>
+					<input id="summary" name="summary" value="<%= page.summary? page.summary: '' %>">
+				</div>
+				<div>
+					<label for="content">content</label>
+					<textarea id="content" name="content"><%= page.content %></textarea>
+				</div>
+				<div>
+					<button>save</button>
+				</div>
+			</form>
+		</div>
+	</body>
+</html>

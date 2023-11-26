@@ -126,7 +126,7 @@ def history(title):
         return render_template("history.html", page=page, current=1, last=last, historys=historys)
 
 
-@bp.route("/history/<title>/<int:last>")
+@bp.route("/history/<title>/<int:current>")
 def history_page(title, current):
     page = Page.query.filter_by(title=title).first()
 
@@ -137,7 +137,7 @@ def history_page(title, current):
     else:
         last = math.ceil(len(page.historys) / 10)
         historys = page.historys[(current - 1) * 10:current * 10]
-        return render_template("history.html", page=the_page, current=current, last=last, historys=historys)
+        return render_template("history.html", page=page, current=current, last=last, historys=historys)
 
 
 @bp.route("/diff/<title>/<int:event>")

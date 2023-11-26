@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<meta name="robots" content="noindex">
+
+		<link rel="stylesheet" href="/style.css">
+
+		<title>diff(<%= page.title %>, <%= page.event %>);</title>
+	</head>
+	<body>
+		<div class="lang lang--javascript">javascript</div>
+		<form action="/search" method="get">
+			<input id="s" name="s" value="">
+			<button>search</button>
+		</form>
+		<h1>diff(<a href="/wiki/<%= encodeURI(page.title) %>"><%= page.title %></a>, <%= page.event %>);</h1>
+		<nav>
+			<a href="/edit/<%= encodeURI(page.title) %>">edit</a>
+			<a href="/history/<%= encodeURI(page.title) %>">history</a>
+			<a href="/back/<%= encodeURI(page.title) %>/<%= page.event %>">view</a>
+			<a href="/rehash/<%= encodeURI(page.title) %>/<%= page.event %>">rehash</a>
+		</nav>
+		<div>
+			<h2>title</h2>
+			<% if (page.titleDiff) { %>
+			<pre class="diff"><%- page.titleDiff %></pre>
+			<% } else { %>
+			<pre>no change</pre>
+			<% } %>
+
+			<h2>content</h2>
+			<% if (page.contentDiff) { %>
+			<pre class="diff"><%- page.contentDiff %></pre>
+			<% } else { %>
+			<pre>no change</pre>
+			<% } %>
+		</div>
+	</body>
+</html>
