@@ -9,14 +9,15 @@ html {
 	position: fixed;
 	right: 0.5rem;
 	top: 0.5rem;
-
-	opacity: 0.5;
 }
 .lang--java {
 	color: orange;
 }
 .lang--python {
 	color: royalblue;
+}
+.lang--javascript {
+	color: gold;
 }
 body {
 	max-width: 80rem;

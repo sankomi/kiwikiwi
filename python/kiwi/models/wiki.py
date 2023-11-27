@@ -10,9 +10,9 @@ class Page(db.Model):
     content = db.Column(db.Text)
     html = db.Column(db.Text)
     text = db.Column(db.Text)
-    lock = db.Column(db.DateTime)
+    lock = db.Column(db.DateTime(timezone=True))
     lock_id = db.Column(db.Integer)
-    refresh = db.Column(db.DateTime, default=datetime.now())
+    refresh = db.Column(db.DateTime(timezone=True), default=datetime.now())
 
     def __repr__(self):
         return f"<Page(id={self.id}, title={self.title}>"
@@ -28,7 +28,7 @@ class History(db.Model):
     summary = db.Column(db.String(100))
     title = db.Column(db.Text)
     content = db.Column(db.Text)
-    write = db.Column(db.DateTime, default=datetime.now())
+    write = db.Column(db.DateTime(timezone=True), default=datetime.now())
 
     def __repr__(self):
         return f"<History(id={self.id}, page_id={self.page_id}>"

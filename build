@@ -1,3 +1,4 @@
 docker build -t kiwi:nginx nginx
 docker build -t kiwi:python python
 docker build -t kiwi:java java
+docker build -t kiwi:javascript javascript
