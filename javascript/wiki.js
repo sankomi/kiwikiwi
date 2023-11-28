@@ -101,6 +101,11 @@ async function editEdit(title, newTitle, summary, content) {
 }
 
 async function history(title, current = 1) {
+	current = +current;
+	if (!current) {
+		current = 1;
+	}
+
 	let page = await Page.findOne({
 		where: {title},
 		include: [History],
@@ -306,6 +311,7 @@ async function update(title, newTitle, summary, content) {
 	locked.content = content;
 	locked.lockId = null;
 	locked.lock = null;
+	locked.refresh = new Date();
 	await locked.save();
 
 	return locked;
