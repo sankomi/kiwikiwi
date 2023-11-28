@@ -54,6 +54,14 @@ router.get("/history/:title", async (req, res) => {
 	render(res, view);
 });
 
+router.get("/history/:title/:current", async (req, res) => {
+	let title = req.params.title;
+	let current = req.params.current;
+
+	let view = await wiki.history(title, current);
+	render(res, view);
+});
+
 router.get("/back/:title/:event", async (req, res) => {
 	let title = req.params.title;
 	let event = req.params.event;

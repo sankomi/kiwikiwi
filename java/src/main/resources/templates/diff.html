@@ -21,7 +21,7 @@
 		<nav>
 			<a th:href="${'/edit/' + #uris.escapePath(page.title)}">edit</a>
 			<a th:href="${'/history/' + #uris.escapePath(page.title)}">history</a>
-			<a th:href="${'/back/' + #uris.escapePath(page.title) + '/' + #uris.escapePath(page.event)}">back</a>
+			<a th:href="${'/back/' + #uris.escapePath(page.title) + '/' + #uris.escapePath(page.event)}">view</a>
 			<a th:href="${'/rehash/' + #uris.escapePath(page.title) + '/' + #uris.escapePath(page.event)}">rehash</a>
 		</nav>
 		<h2>title</h2>

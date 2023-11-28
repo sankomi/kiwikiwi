@@ -1,22 +1,7 @@
-<!DOCTYPE html>
-<html lang="en">
-	<head>
-		<meta charset="utf-8">
-		<meta name="viewport" content="width=device-width, initial-scale=1">
-		<meta name="robots" content="noindex">
+<%- include("parts/header", {title: "kiwikiwi"}) %>
 
-		<link rel="stylesheet" href="/style.css">
+<h1>kiwikiwi</h1>
+<p>kiwikiwi is wikiwiki</p>
+<p>goto a <a href="/wiki">random page</a></p>
 
-		<title>kiwikiwi</title>
-	</head>
-	<body>
-		<div class="lang lang--javascript">javascript</div>
-		<form action="/search" method="get">
-			<input id="s" name="s" value="">
-			<button>search</button>
-		</form>
-		<h1>kiwikiwi</h1>
-		<p>kiwikiwi is wikiwiki</p>
-		<p>goto a <a href="/wiki">random page</a></p>
-	</body>
-</html>
+<%- include("parts/footer") %>

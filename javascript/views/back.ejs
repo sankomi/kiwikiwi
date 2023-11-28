@@ -1,28 +1,13 @@
-<!DOCTYPE html>
-<html lang="en">
-	<head>
-		<meta charset="utf-8">
-		<meta name="viewport" content="width=device-width, initial-scale=1">
-		<meta name="robots" content="noindex">
+<%- include("parts/header", {title: `back(${page.title}, ${page.event});`}) %>
 
-		<link rel="stylesheet" href="/style.css">
+<h1>back(<a href="/wiki/<%= encodeURI(page.title) %>"><%= page.title %></a>, <%= page.event %>);</h1>
+<nav>
+	<a href="/edit/<%= encodeURI(page.title) %>">edit</a>
+	<a href="/history/<%= encodeURI(page.title) %>">history</a>
+	<a href="/rehash/<%= encodeURI(page.title) %>/<%= page.event %>">rehash</a>
+</nav>
+<div>
+	<%- page.html %>
+</div>
 
-		<title>back(<%= page.title %>, <%= page.event %>);</title>
-	</head>
-	<body>
-		<div class="lang lang--javascript">javascript</div>
-		<form action="/search" method="get">
-			<input id="s" name="s" value="">
-			<button>search</button>
-		</form>
-		<h1>back(<a href="/wiki/<%= encodeURI(page.title) %>"><%= page.title %></a>, <%= page.event %>);</h1>
-		<nav>
-			<a href="/edit/<%= encodeURI(page.title) %>">edit</a>
-			<a href="/history/<%= encodeURI(page.title) %>">history</a>
-			<a href="/rehash/<%= encodeURI(page.title) %>/<%= page.event %>">rehash</a>
-		</nav>
-		<div>
-			<%- page.html %>
-		</div>
-	</body>
-</html>
+<%- include("parts/footer") %>

@@ -1,3 +1,4 @@
 docker run -d --rm -p 80:80 --add-host kiwi.local:host-gateway --name kiwi-nginx kiwi:nginx
 docker run -d --rm -p 5000:5000 -v ./data:/kiwi/instance --name kiwi-python kiwi:python
 docker run -d --rm -p 8080:8080 -v ./data:/kiwi/db --name kiwi-java kiwi:java
+docker run -d --rm -p 3000:3000 -v ./data:/kiwi/data --name kiwi-javascript kiwi:javascript
