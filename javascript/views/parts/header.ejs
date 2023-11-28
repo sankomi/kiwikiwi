@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<meta name="robots" content="noindex">
+
+		<link rel="stylesheet" href="/style.css">
+
+		<title><%= title %></title>
+	</head>
+	<body>
+		<div class="lang lang--javascript">javascript</div>
+		<form action="/search" method="get">
+			<input id="s" name="s" value="<%= locals?.string %>">
+			<button>search</button>
+		</form>

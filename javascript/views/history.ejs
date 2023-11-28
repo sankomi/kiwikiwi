@@ -1,50 +1,35 @@
-<!DOCTYPE html>
-<html lang="en">
-	<head>
-		<meta charset="utf-8">
-		<meta name="viewport" content="width=device-width, initial-scale=1">
-		<meta name="robots" content="noindex">
+<%- include("parts/header", {title: `history(${page.title}, ${page.current});`}) %>
 
-		<link rel="stylesheet" href="/style.css">
-
-		<title>history(<%= page.title %>, <%= page.current %>);</title>
-	</head>
-	<body>
-		<div class="lang lang--javascript">javascript</div>
-		<form action="/search" method="get">
-			<input id="s" name="s" value="">
-			<button>search</button>
-		</form>
-		<h1>history(<a href="/wiki/<%= encodeURI(page.title) %>"><%= page.title %></a>, <%= page.current %>);</h1>
-		<nav>
-			<a href="/edit/<%= encodeURI(page.title) %>">edit</a>
-			<a href="/history/<%= encodeURI(page.title) %>">history</a>
-		</nav>
-		<div>
-			<ul>
-				<% for (let history of page.histories) { %>
-				<li>
-					<p><%= history.summary %> - <%= history.write %></p>
-					<div>
-						<a href="/back/<%= encodeURI(page.title) %>/<%= history.event %>">view</a>
-						<a href="/diff/<%= encodeURI(page.title) %>/<%= history.event %>">diff</a>
-						<a href="/rehash/<%= encodeURI(page.title) %>/<%= history.event %>">rehash</a>
-					</div>
-				</li>
-				<% } %>
-			</ul>
+<h1>history(<a href="/wiki/<%= encodeURI(page.title) %>"><%= page.title %></a>, <%= page.current %>);</h1>
+<nav>
+	<a href="/edit/<%= encodeURI(page.title) %>">edit</a>
+	<a href="/history/<%= encodeURI(page.title) %>">history</a>
+</nav>
+<div>
+	<ul>
+		<% for (let history of page.histories) { %>
+		<li>
+			<p><%= history.summary %> - <%= history.write %></p>
 			<div>
-				<% if (page.current > 1 && page.current <= page.last) { %>
-				<a href="/history/<%= encodeURI(page.title) %>/<%= page.current - 1 %>">prev</a>
-				<% } else { %>
-				<span><del>prev</del></span>
-				<% } %>
-				<% if (page.current >= 0 && page.current < page.last) { %>
-				<a href="/history/<%= encodeURI(page.title) %>/<%= page.current + 1 %>">next</a>
-				<% } else { %>
-				<span><del>next</del></span>
-				<% } %>
+				<a href="/back/<%= encodeURI(page.title) %>/<%= history.event %>">view</a>
+				<a href="/diff/<%= encodeURI(page.title) %>/<%= history.event %>">diff</a>
+				<a href="/rehash/<%= encodeURI(page.title) %>/<%= history.event %>">rehash</a>
 			</div>
-		</div>
-	</body>
-</html>
+		</li>
+		<% } %>
+	</ul>
+	<div>
+		<% if (page.current > 1 && page.current <= page.last) { %>
+		<a href="/history/<%= encodeURI(page.title) %>/<%= page.current - 1 %>">prev</a>
+		<% } else { %>
+		<span><del>prev</del></span>
+		<% } %>
+		<% if (page.current >= 0 && page.current < page.last) { %>
+		<a href="/history/<%= encodeURI(page.title) %>/<%= page.current + 1 %>">next</a>
+		<% } else { %>
+		<span><del>next</del></span>
+		<% } %>
+	</div>
+</div>
+
+<%- include("parts/footer") %>
