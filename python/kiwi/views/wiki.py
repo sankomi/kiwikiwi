@@ -123,6 +123,9 @@ def history(title):
     else:
         last = math.ceil(len(page.historys) / 10)
         historys = page.historys[:10]
+        for history in historys:
+            print(history.write)
+            history.write = datetime.fromtimestamp(history.write * 0.001)
         return render_template("history.html", page=page, current=1, last=last, historys=historys)
 
 
@@ -228,13 +231,13 @@ def update(title, new_title, content, summary):
         content_linked = replace(content, LINK_REGEX, LINK_REPLACE)
         html = markdown(bleach.clean(content_linked))
         text = BeautifulSoup(html, features="html.parser").get_text()
-        page = Page(title=new_title, content=content, html=html, text=text)
+        page = Page(title=new_title, content=content, html=html, text=text, refresh=to_ms(datetime.now()))
         db.session.add(page)
 
         title_patch = get_patch("", new_title)
         content_patch = get_patch("", content)
 
-        history = History(page=page, summary=summary or "create", title=title_patch, content=content_patch)
+        history = History(page=page, summary=summary or "create", title=title_patch, content=content_patch, write=to_ms(datetime.now()))
         db.session.add(history)
 
         db.session.commit()
@@ -247,7 +250,7 @@ def update(title, new_title, content, summary):
         db.session.commit()
 
     lock_id = randint(0, 2147483647)
-    lock = datetime.now() + timedelta(seconds=60)
+    lock = to_ms(datetime.now() + timedelta(seconds=60))
 
     try:
         Page.query.filter_by(id=page.id, lock_id=None).update(dict(lock=lock, lock_id=lock_id))
@@ -263,7 +266,7 @@ def update(title, new_title, content, summary):
     title_patch = get_patch(locked.title, new_title)
     content_patch = get_patch(locked.content, content)
     event = locked.historys[0].event + 1
-    history = History(page=locked, summary=summary or "edit", title=title_patch, content=content_patch, event=event, write=datetime.now())
+    history = History(page=locked, summary=summary or "edit", title=title_patch, content=content_patch, event=event, write=to_ms(datetime.now()))
     db.session.add(history)
 
     content_linked = replace(content, LINK_REGEX, LINK_REPLACE)
@@ -275,11 +278,14 @@ def update(title, new_title, content, summary):
     locked.text = text
     locked.lock = None
     locked.lock_id = None
-    locked.refresh = datetime.now()
+    locked.refresh = to_ms(datetime.now())
     db.session.commit()
 
     return locked
 
+
+def to_ms(datetime):
+    return math.floor(datetime.timestamp() * 1000)
 
 def get_patch(text1, text2):
     dmp = diff_match_patch()

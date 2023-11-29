@@ -4,5 +4,5 @@ spring:
     hibernate:
       ddl-auto: update
   datasource:
-    url: jdbc:sqlite:db/kiwi.db?date_class=TEXT
+    url: jdbc:sqlite:db/kiwi.db
     driver-class-name: org.sqlite.JDBC

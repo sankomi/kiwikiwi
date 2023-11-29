@@ -246,7 +246,7 @@ async function update(title, newTitle, summary, content) {
 	}
 
 	if (page === null) {
-		page = Page.build({title: newTitle, content});
+		page = Page.build({title: newTitle, content, refresh: new Date()});
 		await page.save();
 
 		let titlePatch = getPatch("", newTitle);
@@ -256,6 +256,7 @@ async function update(title, newTitle, summary, content) {
 			summary: summary || "create",
 			title: titlePatch,
 			content: contentPatch,
+			write: new Date(),
 		});
 		await history.save()
 			.then(() => history.setPage(page));
@@ -303,6 +304,7 @@ async function update(title, newTitle, summary, content) {
 		event,
 		title: titlePatch,
 		content: contentPatch,
+		write: new Date(),
 	});
 	await history.save()
 		.then(() => history.setPage(locked));

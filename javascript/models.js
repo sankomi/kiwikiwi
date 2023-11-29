@@ -49,14 +49,27 @@ const Page = sqlite.define(
 		},
 		html: {type: Sequelize.TEXT},
 		text: {type: Sequelize.TEXT},
-		lock: {type: Sequelize.DATE},
+		lock: {
+			type: Sequelize.INTEGER,
+			set(value) {
+				this.setDataValue("lock", +value);
+			},
+			get() {
+				return new Date(this.getDataValue("lock"));
+			},
+		},
 		lockId: {
 			type: Sequelize.INTEGER,
 			field: "lock_id",
 		},
 		refresh: {
-			type: Sequelize.DATE,
-			defaultValue: Sequelize.NOW,
+			type: Sequelize.INTEGER,
+			set(value) {
+				this.setDataValue("refresh", +value);
+			},
+			get() {
+				return new Date(this.getDataValue("refresh"));
+			},
 		},
 	},
 	{
@@ -91,8 +104,13 @@ const History = sqlite.define(
 		title: {type: Sequelize.TEXT},
 		content: {type: Sequelize.TEXT},
 		write: {
-			type: Sequelize.DATE,
-			defaultValue: Sequelize.NOW,
+			type: Sequelize.INTEGER,
+			set(value) {
+				this.setDataValue("write", +value);
+			},
+			get() {
+				return new Date(this.getDataValue("write"));
+			},
 		},
 	},
 	{
